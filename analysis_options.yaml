@@ -1,0 +1,10 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Поддерживает единый порядок импортов и упрощает навигацию по файлу.
+    directives_ordering: true
+    # Не позволяет случайно потерять ошибку или результат асинхронной операции.
+    unawaited_futures: true
+    # Напоминает освободить подписку на поток и не допустить утечку ресурсов.
+    cancel_subscriptions: true
