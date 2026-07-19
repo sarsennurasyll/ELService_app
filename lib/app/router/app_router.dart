@@ -9,7 +9,7 @@ final class AppRouter {
         routes: [
           GoRoute(
             path: AppRoutes.root,
-            builder: (_, __) => const Scaffold(body: SizedBox.shrink()),
+            builder: (_, _) => const Scaffold(body: SizedBox.shrink()),
           ),
         ],
       );
