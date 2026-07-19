@@ -13,6 +13,7 @@ final class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.space20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -3,7 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/customer/presentation/pages/chat_page.dart';
 import '../../features/customer/presentation/pages/home_page.dart';
+import '../../features/customer/presentation/pages/orders_page.dart';
+import '../../features/customer/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../shared/widgets/layout/screen.dart';
 import '../../shared/widgets/navigation/admin_bottom_navigation.dart';
@@ -30,6 +33,7 @@ final class AppRouter {
           ShellRoute(
             builder: (context, state, child) => Screen(
               bottomNavigationBar: const CustomerBottomNavigation(),
+              padding: EdgeInsets.zero,
               child: child,
             ),
             routes: [
@@ -39,15 +43,15 @@ final class AppRouter {
               ),
               GoRoute(
                 path: AppRoutes.customerOrders,
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) => const OrdersPage(),
               ),
               GoRoute(
                 path: AppRoutes.customerMessages,
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) => const ChatPage(),
               ),
               GoRoute(
                 path: AppRoutes.customerProfile,
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) => const ProfilePage(),
               ),
             ],
           ),
