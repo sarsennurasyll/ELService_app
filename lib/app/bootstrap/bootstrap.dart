@@ -10,10 +10,9 @@ void bootstrap({
   required AppConfig config,
   required AppBuilder appBuilder,
 }) {
-  WidgetsFlutterBinding.ensureInitialized();
-
   runZonedGuarded<void>(
     () {
+      WidgetsFlutterBinding.ensureInitialized();
       // TODO: Добавить инициализацию общих сервисов приложения.
       runApp(appBuilder(config));
     },
