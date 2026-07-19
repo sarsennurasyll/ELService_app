@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../shared/widgets/layout/screen.dart';
 import '../../shared/widgets/navigation/admin_bottom_navigation.dart';
 import '../../shared/widgets/navigation/customer_bottom_navigation.dart';
@@ -13,7 +14,7 @@ final class AppRouter {
         routes: [
           GoRoute(
             path: AppRoutes.root,
-            redirect: (context, state) => AppRoutes.customerHome,
+            builder: (context, state) => const SplashPage(),
           ),
           ShellRoute(
             builder: (context, state, child) => Screen(
