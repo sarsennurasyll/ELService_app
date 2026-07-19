@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_duration.dart';
 import '../../../../app/theme/app_radius.dart';
@@ -81,14 +83,18 @@ final class _SplashPageState extends State<SplashPage>
               left: AppSpacing.space32,
               child: _Reveal(
                 animation: _actionsController,
-                child: const Column(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _SplashAction(label: 'Get Started'),
-                    SizedBox(height: AppSpacing.space12),
+                    _SplashAction(
+                      label: 'Get Started',
+                      onPressed: () => context.go(AppRoutes.login),
+                    ),
+                    const SizedBox(height: AppSpacing.space12),
                     _SplashAction(
                       label: 'I already have an account',
                       isPrimary: false,
+                      onPressed: () => context.go(AppRoutes.login),
                     ),
                   ],
                 ),
@@ -196,9 +202,14 @@ final class _Brand extends StatelessWidget {
 }
 
 final class _SplashAction extends StatelessWidget {
-  const _SplashAction({required this.label, this.isPrimary = true});
+  const _SplashAction({
+    required this.label,
+    required this.onPressed,
+    this.isPrimary = true,
+  });
 
   final String label;
+  final VoidCallback onPressed;
   final bool isPrimary;
 
   @override
@@ -209,28 +220,31 @@ final class _SplashAction extends StatelessWidget {
       height: isPrimary
           ? AppSpacing.space48
           : AppSpacing.space32 + AppSpacing.space12,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: isPrimary ? AppColors.surface : null,
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          border: isPrimary
-              ? null
-              : Border.all(
-                  color: AppColors.surface.withValues(
-                    alpha: AppColors.primary30.a,
+      child: GestureDetector(
+        onTap: onPressed,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: isPrimary ? AppColors.surface : null,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: isPrimary
+                ? null
+                : Border.all(
+                    color: AppColors.surface.withValues(
+                      alpha: AppColors.primary30.a,
+                    ),
                   ),
-                ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style:
-                (isPrimary
-                        ? AppTextStyles.labelLarge
-                        : AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ))
-                    .copyWith(color: foregroundColor),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style:
+                  (isPrimary
+                          ? AppTextStyles.labelLarge
+                          : AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ))
+                      .copyWith(color: foregroundColor),
+            ),
           ),
         ),
       ),

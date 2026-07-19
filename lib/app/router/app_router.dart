@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../shared/widgets/layout/screen.dart';
 import '../../shared/widgets/navigation/admin_bottom_navigation.dart';
@@ -15,6 +16,14 @@ final class AppRouter {
           GoRoute(
             path: AppRoutes.root,
             builder: (context, state) => const SplashPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.login,
+            builder: (context, state) => const LoginPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.register,
+            builder: (context, state) => const Placeholder(),
           ),
           ShellRoute(
             builder: (context, state, child) => Screen(
