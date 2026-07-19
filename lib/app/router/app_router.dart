@@ -30,28 +30,47 @@ final class AppRouter {
             path: AppRoutes.register,
             builder: (context, state) => const RegisterPage(),
           ),
-          ShellRoute(
-            builder: (context, state, child) => Screen(
-              bottomNavigationBar: const CustomerBottomNavigation(),
+          StatefulShellRoute.indexedStack(
+            builder: (context, state, navigationShell) => Screen(
+              bottomNavigationBar: CustomerBottomNavigation(
+                currentIndex: navigationShell.currentIndex,
+                onDestinationSelected: navigationShell.goBranch,
+              ),
               padding: EdgeInsets.zero,
-              child: child,
+              child: navigationShell,
             ),
-            routes: [
-              GoRoute(
-                path: AppRoutes.customerHome,
-                builder: (context, state) => const HomePage(),
+            branches: [
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.customerHome,
+                    builder: (context, state) => const HomePage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.customerOrders,
-                builder: (context, state) => const OrdersPage(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.customerOrders,
+                    builder: (context, state) => const OrdersPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.customerMessages,
-                builder: (context, state) => const ChatPage(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.customerMessages,
+                    builder: (context, state) => const ChatPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.customerProfile,
-                builder: (context, state) => const ProfilePage(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.customerProfile,
+                    builder: (context, state) => const ProfilePage(),
+                  ),
+                ],
               ),
             ],
           ),

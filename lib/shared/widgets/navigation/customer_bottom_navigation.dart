@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 
 final class CustomerBottomNavigation extends StatelessWidget {
-  const CustomerBottomNavigation({super.key});
+  const CustomerBottomNavigation({
+    required this.currentIndex,
+    required this.onDestinationSelected,
+    super.key,
+  });
+
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
-    final currentPath = GoRouterState.of(context).uri.path;
-
     return SafeArea(
       top: false,
       child: DecoratedBox(
@@ -30,32 +33,36 @@ final class CustomerBottomNavigation extends StatelessWidget {
           child: Row(
             children: [
               _NavigationItem(
-                path: AppRoutes.customerHome,
+                index: 0,
                 label: 'Home',
                 icon: Icons.home_outlined,
                 selectedIcon: Icons.home,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.customerOrders,
+                index: 1,
                 label: 'Orders',
                 icon: Icons.list_alt_outlined,
                 selectedIcon: Icons.list_alt,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.customerMessages,
+                index: 2,
                 label: 'Chat',
                 icon: Icons.chat_bubble_outline,
                 selectedIcon: Icons.chat_bubble,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.customerProfile,
+                index: 3,
                 label: 'Profile',
                 icon: Icons.person_outline,
                 selectedIcon: Icons.person,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
             ],
           ),
@@ -67,27 +74,29 @@ final class CustomerBottomNavigation extends StatelessWidget {
 
 final class _NavigationItem extends StatelessWidget {
   const _NavigationItem({
-    required this.path,
+    required this.index,
     required this.label,
     required this.icon,
     required this.selectedIcon,
-    required this.currentPath,
+    required this.currentIndex,
+    required this.onDestinationSelected,
   });
 
-  final String path;
+  final int index;
   final String label;
   final IconData icon;
   final IconData selectedIcon;
-  final String currentPath;
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = currentPath == path;
+    final isSelected = currentIndex == index;
     final color = isSelected ? AppColors.primary : AppColors.mutedForeground;
 
     return Expanded(
       child: GestureDetector(
-        onTap: () => context.go(path),
+        onTap: () => onDestinationSelected(index),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.space4),
           child: Column(
