@@ -1,8 +1,11 @@
 abstract final class AppRadius {
-  static const none = 0.0;
-  static const small = 4.0;
+  static const small = 6.0;
   static const medium = 8.0;
-  static const large = 12.0;
-  static const extraLarge = 16.0;
-  static const full = 999.0;
+  static const base = 10.0;
+  static const large = 14.0;
+  static const card = 18.0;
+  static const prominent = 22.0;
+  static const extraLarge = 26.0;
+  static const mobileShell = 48.0;
+  static const full = 9999.0;
 }
