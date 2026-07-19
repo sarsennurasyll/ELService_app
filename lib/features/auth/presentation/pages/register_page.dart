@@ -56,9 +56,7 @@ final class _RegisterPageState extends State<RegisterPage> {
             padding: const EdgeInsets.all(AppSpacing.space24),
             child: PrimaryButton(
               label: 'Create Account',
-              onPressed: () {
-                // TODO: подключить регистрацию.
-              },
+              onPressed: () => context.go(AppRoutes.customerHome),
             ),
           ),
         ),

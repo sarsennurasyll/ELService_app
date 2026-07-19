@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/customer/presentation/pages/home_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../shared/widgets/layout/screen.dart';
 import '../../shared/widgets/navigation/admin_bottom_navigation.dart';
@@ -34,7 +35,7 @@ final class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.customerHome,
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) => const HomePage(),
               ),
               GoRoute(
                 path: AppRoutes.customerOrders,

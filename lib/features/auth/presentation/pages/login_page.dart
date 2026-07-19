@@ -33,9 +33,7 @@ final class LoginPage extends StatelessWidget {
             const SizedBox(height: AppSpacing.space24),
             PrimaryButton(
               label: 'Sign In',
-              onPressed: () {
-                // TODO: подключить авторизацию.
-              },
+              onPressed: () => context.go(AppRoutes.customerHome),
             ),
             const SizedBox(height: AppSpacing.space12),
             const _SocialDivider(),
