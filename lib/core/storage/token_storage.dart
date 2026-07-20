@@ -1,33 +1,28 @@
 /// Хранение JWT-токена.
 ///
-/// TODO: подключить JWT и secure storage.
+/// TODO: подключить secure storage после появления Authentication.
 abstract interface class TokenStorage {
-  /// TODO: сохранить access token.
   Future<void> saveToken(String token);
 
-  /// TODO: прочитать access token.
   Future<String?> getToken();
 
-  /// TODO: удалить access token.
   Future<void> removeToken();
 }
 
-/// Заглушка до интеграции с Backend.
-final class UnimplementedTokenStorage implements TokenStorage {
-  const UnimplementedTokenStorage();
+/// Временное in-memory хранилище до secure storage.
+final class InMemoryTokenStorage implements TokenStorage {
+  String? _token;
 
   @override
-  Future<void> saveToken(String token) {
-    throw UnimplementedError('TODO: TokenStorage.saveToken');
+  Future<void> saveToken(String token) async {
+    _token = token;
   }
 
   @override
-  Future<String?> getToken() {
-    throw UnimplementedError('TODO: TokenStorage.getToken');
-  }
+  Future<String?> getToken() async => _token;
 
   @override
-  Future<void> removeToken() {
-    throw UnimplementedError('TODO: TokenStorage.removeToken');
+  Future<void> removeToken() async {
+    _token = null;
   }
 }
