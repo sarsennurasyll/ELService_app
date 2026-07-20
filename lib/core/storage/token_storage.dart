@@ -1,28 +1,42 @@
-/// Хранение JWT-токена.
+/// Хранение JWT access / refresh токенов.
 ///
 /// TODO: подключить secure storage после появления Authentication.
 abstract interface class TokenStorage {
-  Future<void> saveToken(String token);
+  Future<void> saveAccessToken(String token);
 
-  Future<String?> getToken();
+  Future<void> saveRefreshToken(String token);
 
-  Future<void> removeToken();
+  Future<String?> getAccessToken();
+
+  Future<String?> getRefreshToken();
+
+  Future<void> clear();
 }
 
 /// Временное in-memory хранилище до secure storage.
 final class InMemoryTokenStorage implements TokenStorage {
-  String? _token;
+  String? _accessToken;
+  String? _refreshToken;
 
   @override
-  Future<void> saveToken(String token) async {
-    _token = token;
+  Future<void> saveAccessToken(String token) async {
+    _accessToken = token;
   }
 
   @override
-  Future<String?> getToken() async => _token;
+  Future<void> saveRefreshToken(String token) async {
+    _refreshToken = token;
+  }
 
   @override
-  Future<void> removeToken() async {
-    _token = null;
+  Future<String?> getAccessToken() async => _accessToken;
+
+  @override
+  Future<String?> getRefreshToken() async => _refreshToken;
+
+  @override
+  Future<void> clear() async {
+    _accessToken = null;
+    _refreshToken = null;
   }
 }

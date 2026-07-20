@@ -1,55 +1,66 @@
+import '../../../../core/errors/api_exception.dart';
 import '../../../../core/errors/failure.dart';
+import '../../../../core/errors/network_exception.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
-import '../../domain/models/user.dart';
+import '../../domain/models/session.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
-import '../mappers/user_mapper.dart';
+import '../mappers/auth_mapper.dart';
+import '../mappers/session_mapper.dart';
+import '../models/refresh_token_dto.dart';
 
 /// Реализация [AuthRepository].
-///
-/// TODO: подключить Repository к RemoteDataSource и TokenStorage.
 final class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
-    required UserMapper userMapper,
+    required TokenStorage tokenStorage,
+    this.authMapper = const AuthMapper(),
+    this.sessionMapper = const SessionMapper(),
   }) : _remoteDataSource = remoteDataSource,
-       _userMapper = userMapper;
+       _tokenStorage = tokenStorage;
 
   final AuthRemoteDataSource _remoteDataSource;
-  final UserMapper _userMapper;
+  final TokenStorage _tokenStorage;
+  final AuthMapper authMapper;
+  final SessionMapper sessionMapper;
 
   @override
-  Future<Result<User>> login({
+  Future<Result<Session>> login({
     required String email,
     required String password,
   }) async {
-    // TODO: сохранить JWT после успешного ответа Backend.
     try {
-      final dto = await _remoteDataSource.login(
-        email: email,
-        password: password,
+      final response = await _remoteDataSource.login(
+        authMapper.toLoginRequest(email: email, password: password),
       );
-      return Success(_userMapper.fromDto(dto));
+      final session = sessionMapper.fromLoginResponse(response);
+      await _persistSession(session);
+      return Success(session);
     } on Exception catch (error) {
-      return ErrorResult(Failure(message: error.toString()));
+      return ErrorResult(_mapFailure(error));
     }
   }
 
   @override
-  Future<Result<User>> register({
+  Future<Result<Session>> register({
     required String email,
     required String password,
     required String name,
   }) async {
     try {
-      final dto = await _remoteDataSource.register(
-        email: email,
-        password: password,
-        name: name,
+      final response = await _remoteDataSource.register(
+        authMapper.toRegisterRequest(
+          email: email,
+          password: password,
+          name: name,
+        ),
       );
-      return Success(_userMapper.fromDto(dto));
+      final session = sessionMapper.fromLoginResponse(response);
+      await _persistSession(session);
+      return Success(session);
     } on Exception catch (error) {
-      return ErrorResult(Failure(message: error.toString()));
+      return ErrorResult(_mapFailure(error));
     }
   }
 
@@ -57,22 +68,47 @@ final class AuthRepositoryImpl implements AuthRepository {
   Future<Result<void>> logout() async {
     try {
       await _remoteDataSource.logout();
+      await _tokenStorage.clear();
       return const Success(null);
     } on Exception catch (error) {
-      return ErrorResult(Failure(message: error.toString()));
+      await _tokenStorage.clear();
+      return ErrorResult(_mapFailure(error));
     }
   }
 
   @override
-  Future<Result<User?>> getCurrentUser() async {
+  Future<Result<Session>> refreshToken() async {
     try {
-      final dto = await _remoteDataSource.getCurrentUser();
-      if (dto == null) {
-        return const Success(null);
+      final refreshToken = await _tokenStorage.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        return const ErrorResult(
+          Failure(message: 'Refresh token отсутствует'),
+        );
       }
-      return Success(_userMapper.fromDto(dto));
+
+      final response = await _remoteDataSource.refreshToken(
+        RefreshTokenDto(refreshToken: refreshToken),
+      );
+      final session = sessionMapper.fromLoginResponse(response);
+      await _persistSession(session);
+      return Success(session);
     } on Exception catch (error) {
-      return ErrorResult(Failure(message: error.toString()));
+      return ErrorResult(_mapFailure(error));
     }
+  }
+
+  Future<void> _persistSession(Session session) async {
+    await _tokenStorage.saveAccessToken(session.accessToken);
+    await _tokenStorage.saveRefreshToken(session.refreshToken);
+  }
+
+  Failure _mapFailure(Exception error) {
+    if (error is ApiException) {
+      return Failure(message: error.message, code: error.code);
+    }
+    if (error is NetworkException) {
+      return Failure(message: error.message);
+    }
+    return Failure(message: error.toString());
   }
 }

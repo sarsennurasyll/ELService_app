@@ -1,16 +1,16 @@
 import '../../../../core/utils/result.dart';
-import '../models/user.dart';
+import '../models/session.dart';
 
 /// Контракт репозитория авторизации.
 ///
-/// TODO: подключить Repository к RemoteDataSource и JWT.
+/// TODO: подключить к реальному Node.js Backend.
 abstract interface class AuthRepository {
-  Future<Result<User>> login({
+  Future<Result<Session>> login({
     required String email,
     required String password,
   });
 
-  Future<Result<User>> register({
+  Future<Result<Session>> register({
     required String email,
     required String password,
     required String name,
@@ -18,5 +18,5 @@ abstract interface class AuthRepository {
 
   Future<Result<void>> logout();
 
-  Future<Result<User?>> getCurrentUser();
+  Future<Result<Session>> refreshToken();
 }

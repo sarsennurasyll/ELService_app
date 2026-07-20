@@ -15,7 +15,7 @@ final class AuthInterceptor extends QueuedInterceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _tokenStorage.getToken();
+    final token = await _tokenStorage.getAccessToken();
     if (token != null && token.isNotEmpty) {
       options.headers[ApiConstants.authorizationHeader] =
           '${ApiConstants.bearerPrefix} $token';
