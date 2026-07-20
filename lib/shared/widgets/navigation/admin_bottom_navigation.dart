@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 
 final class AdminBottomNavigation extends StatelessWidget {
-  const AdminBottomNavigation({super.key});
+  const AdminBottomNavigation({
+    required this.currentIndex,
+    required this.onDestinationSelected,
+    super.key,
+  });
+
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
-    final currentPath = GoRouterState.of(context).uri.path;
-
     return SafeArea(
       top: false,
       child: DecoratedBox(
@@ -30,39 +33,44 @@ final class AdminBottomNavigation extends StatelessWidget {
           child: Row(
             children: [
               _NavigationItem(
-                path: AppRoutes.adminDashboard,
-                label: 'Overview',
+                index: 0,
+                label: 'Dashboard',
                 icon: Icons.dashboard_outlined,
                 selectedIcon: Icons.dashboard,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.adminOrders,
+                index: 1,
                 label: 'Orders',
                 icon: Icons.list_alt_outlined,
                 selectedIcon: Icons.list_alt,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.adminUsers,
-                label: 'People',
+                index: 2,
+                label: 'Users',
                 icon: Icons.group_outlined,
                 selectedIcon: Icons.group,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.adminAnalytics,
+                index: 3,
                 label: 'Analytics',
                 icon: Icons.bar_chart_outlined,
                 selectedIcon: Icons.bar_chart,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.adminSettings,
+                index: 4,
                 label: 'Settings',
                 icon: Icons.settings_outlined,
                 selectedIcon: Icons.settings,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
             ],
           ),
@@ -74,27 +82,29 @@ final class AdminBottomNavigation extends StatelessWidget {
 
 final class _NavigationItem extends StatelessWidget {
   const _NavigationItem({
-    required this.path,
+    required this.index,
     required this.label,
     required this.icon,
     required this.selectedIcon,
-    required this.currentPath,
+    required this.currentIndex,
+    required this.onDestinationSelected,
   });
 
-  final String path;
+  final int index;
   final String label;
   final IconData icon;
   final IconData selectedIcon;
-  final String currentPath;
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = currentPath == path;
+    final isSelected = currentIndex == index;
     final color = isSelected ? AppColors.primary : AppColors.mutedForeground;
 
     return Expanded(
       child: GestureDetector(
-        onTap: () => context.go(path),
+        onTap: () => onDestinationSelected(index),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.space4),
           child: Column(

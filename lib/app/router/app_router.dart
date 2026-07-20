@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/admin/presentation/pages/analytics_page.dart';
+import '../../features/admin/presentation/pages/dashboard_page.dart'
+    as admin_dashboard;
+import '../../features/admin/presentation/pages/orders_page.dart'
+    as admin_orders;
+import '../../features/admin/presentation/pages/settings_page.dart';
+import '../../features/admin/presentation/pages/users_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/customer/presentation/pages/chat_page.dart';
@@ -148,31 +155,57 @@ final class AppRouter {
               ),
             ],
           ),
-          ShellRoute(
-            builder: (context, state, child) => Screen(
-              bottomNavigationBar: const AdminBottomNavigation(),
-              child: child,
+          StatefulShellRoute.indexedStack(
+            builder: (context, state, navigationShell) => Screen(
+              bottomNavigationBar: AdminBottomNavigation(
+                currentIndex: navigationShell.currentIndex,
+                onDestinationSelected: navigationShell.goBranch,
+              ),
+              padding: EdgeInsets.zero,
+              child: navigationShell,
             ),
-            routes: [
-              GoRoute(
-                path: AppRoutes.adminDashboard,
-                builder: (context, state) => const Placeholder(),
+            branches: [
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.adminDashboard,
+                    builder: (context, state) =>
+                        const admin_dashboard.DashboardPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.adminOrders,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.adminOrders,
+                    builder: (context, state) =>
+                        const admin_orders.OrdersPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.adminUsers,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.adminUsers,
+                    builder: (context, state) => const UsersPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.adminAnalytics,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.adminAnalytics,
+                    builder: (context, state) => const AnalyticsPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.adminSettings,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.adminSettings,
+                    builder: (context, state) => const SettingsPage(),
+                  ),
+                ],
               ),
             ],
           ),
