@@ -13,8 +13,8 @@ abstract final class AppRoutes {
 
   static const technicianDashboard = '/tech';
   static const technicianOrders = '/tech/orders';
-  static const technicianWallet = '/tech/earnings';
   static const technicianCalendar = '/tech/calendar';
+  static const technicianEarnings = '/tech/earnings';
   static const technicianProfile = '/tech/profile';
 
   static const adminDashboard = '/admin';

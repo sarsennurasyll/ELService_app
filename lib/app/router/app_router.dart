@@ -10,6 +10,13 @@ import '../../features/customer/presentation/pages/order_details_page.dart';
 import '../../features/customer/presentation/pages/orders_page.dart';
 import '../../features/customer/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/technician/presentation/pages/calendar_page.dart';
+import '../../features/technician/presentation/pages/dashboard_page.dart';
+import '../../features/technician/presentation/pages/earnings_page.dart';
+import '../../features/technician/presentation/pages/orders_page.dart'
+    as technician_orders;
+import '../../features/technician/presentation/pages/profile_page.dart'
+    as technician_profile;
 import '../../shared/widgets/layout/screen.dart';
 import '../../shared/widgets/navigation/admin_bottom_navigation.dart';
 import '../../shared/widgets/navigation/customer_bottom_navigation.dart';
@@ -87,31 +94,57 @@ final class AppRouter {
               ),
             ],
           ),
-          ShellRoute(
-            builder: (context, state, child) => Screen(
-              bottomNavigationBar: const TechnicianBottomNavigation(),
-              child: child,
+          StatefulShellRoute.indexedStack(
+            builder: (context, state, navigationShell) => Screen(
+              bottomNavigationBar: TechnicianBottomNavigation(
+                currentIndex: navigationShell.currentIndex,
+                onDestinationSelected: navigationShell.goBranch,
+              ),
+              padding: EdgeInsets.zero,
+              child: navigationShell,
             ),
-            routes: [
-              GoRoute(
-                path: AppRoutes.technicianDashboard,
-                builder: (context, state) => const Placeholder(),
+            branches: [
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.technicianDashboard,
+                    builder: (context, state) => const DashboardPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.technicianOrders,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.technicianOrders,
+                    builder: (context, state) =>
+                        const technician_orders.OrdersPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.technicianWallet,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.technicianCalendar,
+                    builder: (context, state) => const CalendarPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.technicianCalendar,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.technicianEarnings,
+                    builder: (context, state) => const EarningsPage(),
+                  ),
+                ],
               ),
-              GoRoute(
-                path: AppRoutes.technicianProfile,
-                builder: (context, state) => const Placeholder(),
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: AppRoutes.technicianProfile,
+                    builder: (context, state) =>
+                        const technician_profile.ProfilePage(),
+                  ),
+                ],
               ),
             ],
           ),

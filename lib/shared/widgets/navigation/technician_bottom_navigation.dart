@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 
 final class TechnicianBottomNavigation extends StatelessWidget {
-  const TechnicianBottomNavigation({super.key});
+  const TechnicianBottomNavigation({
+    required this.currentIndex,
+    required this.onDestinationSelected,
+    super.key,
+  });
+
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
-    final currentPath = GoRouterState.of(context).uri.path;
-
     return SafeArea(
       top: false,
       child: DecoratedBox(
@@ -30,39 +33,44 @@ final class TechnicianBottomNavigation extends StatelessWidget {
           child: Row(
             children: [
               _NavigationItem(
-                path: AppRoutes.technicianDashboard,
+                index: 0,
                 label: 'Dashboard',
                 icon: Icons.dashboard_outlined,
                 selectedIcon: Icons.dashboard,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.technicianOrders,
+                index: 1,
                 label: 'Orders',
                 icon: Icons.inbox_outlined,
                 selectedIcon: Icons.inbox,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.technicianWallet,
-                label: 'Earnings',
-                icon: Icons.account_balance_wallet_outlined,
-                selectedIcon: Icons.account_balance_wallet,
-                currentPath: currentPath,
-              ),
-              _NavigationItem(
-                path: AppRoutes.technicianCalendar,
+                index: 2,
                 label: 'Calendar',
                 icon: Icons.calendar_month_outlined,
                 selectedIcon: Icons.calendar_month,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
               _NavigationItem(
-                path: AppRoutes.technicianProfile,
+                index: 3,
+                label: 'Earnings',
+                icon: Icons.account_balance_wallet_outlined,
+                selectedIcon: Icons.account_balance_wallet,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
+              ),
+              _NavigationItem(
+                index: 4,
                 label: 'Profile',
                 icon: Icons.person_outline,
                 selectedIcon: Icons.person,
-                currentPath: currentPath,
+                currentIndex: currentIndex,
+                onDestinationSelected: onDestinationSelected,
               ),
             ],
           ),
@@ -74,27 +82,29 @@ final class TechnicianBottomNavigation extends StatelessWidget {
 
 final class _NavigationItem extends StatelessWidget {
   const _NavigationItem({
-    required this.path,
+    required this.index,
     required this.label,
     required this.icon,
     required this.selectedIcon,
-    required this.currentPath,
+    required this.currentIndex,
+    required this.onDestinationSelected,
   });
 
-  final String path;
+  final int index;
   final String label;
   final IconData icon;
   final IconData selectedIcon;
-  final String currentPath;
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = currentPath == path;
+    final isSelected = currentIndex == index;
     final color = isSelected ? AppColors.primary : AppColors.mutedForeground;
 
     return Expanded(
       child: GestureDetector(
-        onTap: () => context.go(path),
+        onTap: () => onDestinationSelected(index),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.space4),
           child: Column(
