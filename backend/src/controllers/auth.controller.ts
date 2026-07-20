@@ -1,38 +1,32 @@
 import type { Request, Response } from 'express';
 
+import { AuthService } from '../services/auth.service';
+import { sendSuccess } from '../utils/api-response';
 import { asyncHandler } from '../utils/async-handler';
+import type { LoginInput, RefreshInput, RegisterInput } from '../validators/auth.schemas';
 
-/** Заготовки auth-эндпоинтов без бизнес-логики. */
+const authService = new AuthService();
+
 export const authController = {
-  login: asyncHandler(async (_req: Request, res: Response) => {
-    res.status(501).json({
-      success: false,
-      message: 'Auth login is not implemented yet',
-      code: 'NOT_IMPLEMENTED',
-    });
+  register: asyncHandler(async (req: Request, res: Response) => {
+    const data = await authService.register(req.body as RegisterInput);
+    sendSuccess(res, data, 201);
   }),
 
-  register: asyncHandler(async (_req: Request, res: Response) => {
-    res.status(501).json({
-      success: false,
-      message: 'Auth register is not implemented yet',
-      code: 'NOT_IMPLEMENTED',
-    });
+  login: asyncHandler(async (req: Request, res: Response) => {
+    const data = await authService.login(req.body as LoginInput);
+    sendSuccess(res, data);
   }),
 
-  refresh: asyncHandler(async (_req: Request, res: Response) => {
-    res.status(501).json({
-      success: false,
-      message: 'Auth refresh is not implemented yet',
-      code: 'NOT_IMPLEMENTED',
-    });
+  refresh: asyncHandler(async (req: Request, res: Response) => {
+    const data = await authService.refresh(req.body as RefreshInput);
+    sendSuccess(res, data);
   }),
 
-  logout: asyncHandler(async (_req: Request, res: Response) => {
-    res.status(501).json({
-      success: false,
-      message: 'Auth logout is not implemented yet',
-      code: 'NOT_IMPLEMENTED',
-    });
+  logout: asyncHandler(async (req: Request, res: Response) => {
+    const refreshToken =
+      typeof req.body?.refreshToken === 'string' ? req.body.refreshToken : undefined;
+    const data = await authService.logout(refreshToken);
+    sendSuccess(res, data);
   }),
 };

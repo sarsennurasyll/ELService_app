@@ -12,7 +12,7 @@ export const validate =
 
     if (!result.success) {
       next(
-        new AppError(400, 'Validation failed', 'VALIDATION_ERROR'),
+        new AppError(400, 'Validation failed', 'VALIDATION_ERROR', result.error.flatten()),
       );
       return;
     }
