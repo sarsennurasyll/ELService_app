@@ -1,8 +1,14 @@
 import { prisma } from '../prisma/client';
 
-/** Заготовка репозитория категорий. */
+/** Репозиторий категорий через Prisma. */
 export class CategoryRepository {
   findAll() {
-    return prisma.category.findMany();
+    return prisma.category.findMany({
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  findById(id: string) {
+    return prisma.category.findUnique({ where: { id } });
   }
 }
