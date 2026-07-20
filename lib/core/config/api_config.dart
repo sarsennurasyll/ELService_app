@@ -1,6 +1,6 @@
 /// Конфигурация доступа к Backend.
 ///
-/// TODO: подключить Node.js REST API и окружения.
+/// TODO: подставить реальный baseUrl Node.js REST API.
 final class ApiConfig {
   const ApiConfig({
     required this.baseUrl,
@@ -8,12 +8,12 @@ final class ApiConfig {
     this.receiveTimeout = const Duration(seconds: 15),
   });
 
+  /// Placeholder до появления Backend.
   final String baseUrl;
   final Duration connectTimeout;
   final Duration receiveTimeout;
 
-  /// Временный адрес до появления Backend.
-  static const development = ApiConfig(
-    baseUrl: 'http://localhost:3000/api/v1',
+  static const placeholder = ApiConfig(
+    baseUrl: 'BASE_URL_PLACEHOLDER',
   );
 }

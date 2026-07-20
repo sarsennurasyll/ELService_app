@@ -1,42 +1,33 @@
-/// Хранение JWT-токенов.
+/// Хранение JWT-токена.
 ///
 /// TODO: подключить JWT и secure storage.
 abstract interface class TokenStorage {
-  Future<String?> readAccessToken();
+  /// TODO: сохранить access token.
+  Future<void> saveToken(String token);
 
-  Future<String?> readRefreshToken();
+  /// TODO: прочитать access token.
+  Future<String?> getToken();
 
-  Future<void> saveTokens({
-    required String accessToken,
-    required String refreshToken,
-  });
-
-  Future<void> clear();
+  /// TODO: удалить access token.
+  Future<void> removeToken();
 }
 
 /// Заглушка до интеграции с Backend.
-final class InMemoryTokenStorage implements TokenStorage {
-  String? _accessToken;
-  String? _refreshToken;
+final class UnimplementedTokenStorage implements TokenStorage {
+  const UnimplementedTokenStorage();
 
   @override
-  Future<String?> readAccessToken() async => _accessToken;
-
-  @override
-  Future<String?> readRefreshToken() async => _refreshToken;
-
-  @override
-  Future<void> saveTokens({
-    required String accessToken,
-    required String refreshToken,
-  }) async {
-    _accessToken = accessToken;
-    _refreshToken = refreshToken;
+  Future<void> saveToken(String token) {
+    throw UnimplementedError('TODO: TokenStorage.saveToken');
   }
 
   @override
-  Future<void> clear() async {
-    _accessToken = null;
-    _refreshToken = null;
+  Future<String?> getToken() {
+    throw UnimplementedError('TODO: TokenStorage.getToken');
+  }
+
+  @override
+  Future<void> removeToken() {
+    throw UnimplementedError('TODO: TokenStorage.removeToken');
   }
 }

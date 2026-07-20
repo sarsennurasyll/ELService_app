@@ -1,43 +1,48 @@
+import '../config/api_config.dart';
+
 /// HTTP-клиент приложения.
 ///
 /// TODO: подключить Dio и Node.js REST API.
 /// TODO: добавить интерцептор JWT.
 final class ApiClient {
-  const ApiClient({required this.baseUrl});
+  const ApiClient({required this.config});
 
-  final String baseUrl;
+  final ApiConfig config;
 
-  /// TODO: реализовать GET через Dio.
-  Future<Map<String, dynamic>> get(String endpoint) {
-    throw UnimplementedError(
-      'TODO: RemoteDataSource — GET $baseUrl$endpoint',
-    );
+  /// TODO: реализовать GET.
+  Future<Map<String, dynamic>> get(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+  }) {
+    throw UnimplementedError('TODO: ApiClient.get($endpoint)');
   }
 
-  /// TODO: реализовать POST через Dio.
+  /// TODO: реализовать POST.
   Future<Map<String, dynamic>> post(
     String endpoint, {
     Map<String, dynamic>? body,
   }) {
-    throw UnimplementedError(
-      'TODO: RemoteDataSource — POST $baseUrl$endpoint',
-    );
+    throw UnimplementedError('TODO: ApiClient.post($endpoint)');
   }
 
-  /// TODO: реализовать PUT через Dio.
+  /// TODO: реализовать PUT.
   Future<Map<String, dynamic>> put(
     String endpoint, {
     Map<String, dynamic>? body,
   }) {
-    throw UnimplementedError(
-      'TODO: RemoteDataSource — PUT $baseUrl$endpoint',
-    );
+    throw UnimplementedError('TODO: ApiClient.put($endpoint)');
   }
 
-  /// TODO: реализовать DELETE через Dio.
+  /// TODO: реализовать PATCH.
+  Future<Map<String, dynamic>> patch(
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) {
+    throw UnimplementedError('TODO: ApiClient.patch($endpoint)');
+  }
+
+  /// TODO: реализовать DELETE.
   Future<Map<String, dynamic>> delete(String endpoint) {
-    throw UnimplementedError(
-      'TODO: RemoteDataSource — DELETE $baseUrl$endpoint',
-    );
+    throw UnimplementedError('TODO: ApiClient.delete($endpoint)');
   }
 }
