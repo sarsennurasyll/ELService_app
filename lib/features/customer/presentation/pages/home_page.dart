@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_shadows.dart';
@@ -281,9 +283,7 @@ final class _CategoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // TODO: открыть создание заказа.
-      },
+      onTap: () => context.push(AppRoutes.customerCreateOrder),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -322,9 +322,7 @@ final class _EmergencyBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // TODO: открыть срочный заказ.
-      },
+      onTap: () => context.push(AppRoutes.customerCreateOrder),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.primary,

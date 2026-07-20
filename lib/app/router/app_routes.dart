@@ -6,6 +6,10 @@ abstract final class AppRoutes {
   static const customerOrders = '/orders';
   static const customerMessages = '/chat';
   static const customerProfile = '/profile';
+  static const customerCreateOrder = '/order/new';
+  static const customerOrderDetails = '/order/details/:id';
+
+  static String orderDetails(String id) => '/order/details/$id';
 
   static const technicianDashboard = '/tech';
   static const technicianOrders = '/tech/orders';

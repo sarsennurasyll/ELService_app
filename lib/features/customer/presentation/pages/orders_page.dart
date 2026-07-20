@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_shadows.dart';
@@ -159,9 +161,7 @@ final class _OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      onTap: () {
-        // TODO: открыть детали заказа.
-      },
+      onTap: () => context.push(AppRoutes.orderDetails(order.id)),
       child: Column(
         children: [
           Row(
@@ -330,6 +330,7 @@ final class _EmptyOrders extends StatelessWidget {
 
 final class _Order {
   const _Order({
+    required this.id,
     required this.icon,
     required this.title,
     required this.technician,
@@ -339,6 +340,7 @@ final class _Order {
     this.price,
   });
 
+  final String id;
   final IconData icon;
   final String title;
   final String technician;
@@ -350,6 +352,7 @@ final class _Order {
 
 const _activeOrders = [
   _Order(
+    id: '1',
     icon: Icons.kitchen_outlined,
     title: 'Refrigerator repair',
     technician: 'Dmitry Volkov',
@@ -361,6 +364,7 @@ const _activeOrders = [
 
 const _pastOrders = [
   _Order(
+    id: '2',
     icon: Icons.local_laundry_service_outlined,
     title: 'Washing machine',
     technician: 'Arman Serikov',
@@ -370,6 +374,7 @@ const _pastOrders = [
     price: '22 000 ₸',
   ),
   _Order(
+    id: '3',
     icon: Icons.air_outlined,
     title: 'AC installation',
     technician: 'Bauyrzhan K.',

@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/customer/presentation/pages/chat_page.dart';
+import '../../features/customer/presentation/pages/create_order_page.dart';
 import '../../features/customer/presentation/pages/home_page.dart';
+import '../../features/customer/presentation/pages/order_details_page.dart';
 import '../../features/customer/presentation/pages/orders_page.dart';
 import '../../features/customer/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
@@ -29,6 +31,17 @@ final class AppRouter {
           GoRoute(
             path: AppRoutes.register,
             builder: (context, state) => const RegisterPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.customerCreateOrder,
+            builder: (context, state) => const CreateOrderPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.customerOrderDetails,
+            builder: (context, state) {
+              final orderId = state.pathParameters['id'] ?? '1';
+              return OrderDetailsPage(orderId: orderId);
+            },
           ),
           StatefulShellRoute.indexedStack(
             builder: (context, state, navigationShell) => Screen(
