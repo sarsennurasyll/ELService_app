@@ -7,10 +7,23 @@ import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_shadows.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
+import '../../domain/models/category.dart';
+import '../../domain/repositories/category_repository.dart';
 
-final class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+final class HomePage extends StatefulWidget {
+  const HomePage({required this.categoryRepository, super.key});
+
+  final CategoryRepository categoryRepository;
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+final class _HomePageState extends State<HomePage> {
+  late final Future<Result<List<Category>>> _categoriesFuture =
+      widget.categoryRepository.getCategories();
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +38,29 @@ final class HomePage extends StatelessWidget {
           const SizedBox(height: AppSpacing.space20),
           const _SectionHeader(title: 'Categories', actionLabel: 'See all'),
           const SizedBox(height: AppSpacing.space12),
-          const _CategoriesGrid(),
+          FutureBuilder<Result<List<Category>>>(
+            future: _categoriesFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const _CategoriesLoading();
+              }
+
+              final result = snapshot.data;
+              if (result is ErrorResult<List<Category>>) {
+                return _CategoriesError(message: result.failure.message);
+              }
+              if (result is Success<List<Category>>) {
+                if (result.value.isEmpty) {
+                  return const _CategoriesEmpty();
+                }
+                return _CategoriesGrid(categories: result.value);
+              }
+
+              return const _CategoriesError(
+                message: 'Не удалось загрузить категории',
+              );
+            },
+          ),
           const SizedBox(height: AppSpacing.space20),
           const _EmergencyBanner(),
           const SizedBox(height: AppSpacing.space20),
@@ -247,38 +282,43 @@ final class _SectionHeader extends StatelessWidget {
 }
 
 final class _CategoriesGrid extends StatelessWidget {
-  const _CategoriesGrid();
+  const _CategoriesGrid({required this.categories});
+
+  final List<Category> categories;
 
   @override
   Widget build(BuildContext context) {
+    final rowCount = (categories.length + 3) ~/ 4;
+
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(child: _CategoryItem(category: _categories[0])),
-            Expanded(child: _CategoryItem(category: _categories[1])),
-            Expanded(child: _CategoryItem(category: _categories[2])),
-            Expanded(child: _CategoryItem(category: _categories[3])),
-          ],
-        ),
-        SizedBox(height: AppSpacing.space12),
-        Row(
-          children: [
-            Expanded(child: _CategoryItem(category: _categories[4])),
-            Expanded(child: _CategoryItem(category: _categories[5])),
-            Expanded(child: _CategoryItem(category: _categories[6])),
-            Expanded(child: _CategoryItem(category: _categories[7])),
-          ],
-        ),
+        for (var row = 0; row < rowCount; row++) ...[
+          Row(
+            children: [
+              for (var column = 0; column < 4; column++)
+                Expanded(
+                  child: _buildCategoryItem(row * 4 + column),
+                ),
+            ],
+          ),
+          if (row < rowCount - 1) const SizedBox(height: AppSpacing.space12),
+        ],
       ],
     );
+  }
+
+  Widget _buildCategoryItem(int index) {
+    if (index >= categories.length) {
+      return const SizedBox.shrink();
+    }
+    return _CategoryItem(category: categories[index]);
   }
 }
 
 final class _CategoryItem extends StatelessWidget {
   const _CategoryItem({required this.category});
 
-  final _Category category;
+  final Category category;
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +336,7 @@ final class _CategoryItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.card),
               ),
               child: Icon(
-                category.icon,
+                _categoryIcon(category),
                 size: AppSpacing.space24,
                 color: AppColors.primary,
               ),
@@ -304,13 +344,64 @@ final class _CategoryItem extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.space8),
           Text(
-            category.label,
+            category.name,
             style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.mutedForeground,
             ),
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+}
+
+final class _CategoriesLoading extends StatelessWidget {
+  const _CategoriesLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      height: AppSpacing.space64,
+      child: Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+final class _CategoriesEmpty extends StatelessWidget {
+  const _CategoriesEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      height: AppSpacing.space64,
+      child: Center(
+        child: Text(
+          'Категории пока не добавлены',
+          style: AppTextStyles.bodySmall,
+        ),
+      ),
+    );
+  }
+}
+
+final class _CategoriesError extends StatelessWidget {
+  const _CategoriesError({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: AppSpacing.space64,
+      child: Center(
+        child: Text(
+          message,
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
@@ -514,13 +605,6 @@ final class _TechnicianCardContent extends StatelessWidget {
   }
 }
 
-final class _Category {
-  const _Category({required this.label, required this.icon});
-
-  final String label;
-  final IconData icon;
-}
-
 final class _Technician {
   const _Technician({
     required this.name,
@@ -539,16 +623,18 @@ final class _Technician {
   final String eta;
 }
 
-const _categories = [
-  _Category(label: 'Fridge', icon: Icons.kitchen_outlined),
-  _Category(label: 'Washer', icon: Icons.local_laundry_service_outlined),
-  _Category(label: 'AC', icon: Icons.air_outlined),
-  _Category(label: 'TV', icon: Icons.tv_outlined),
-  _Category(label: 'Micro', icon: Icons.microwave_outlined),
-  _Category(label: 'Oven', icon: Icons.local_fire_department_outlined),
-  _Category(label: 'Heater', icon: Icons.bolt_outlined),
-  _Category(label: 'More', icon: Icons.more_horiz),
-];
+IconData _categoryIcon(Category category) {
+  return switch ((category.icon ?? category.name).toLowerCase()) {
+    'refrigerator' || 'fridge' => Icons.kitchen_outlined,
+    'washing machine' || 'washer' => Icons.local_laundry_service_outlined,
+    'air conditioner' || 'ac' => Icons.air_outlined,
+    'tv' || 'television' => Icons.tv_outlined,
+    'microwave' || 'micro' => Icons.microwave_outlined,
+    'oven' => Icons.local_fire_department_outlined,
+    'water heater' || 'heater' => Icons.bolt_outlined,
+    _ => Icons.build_outlined,
+  };
+}
 
 const _technicians = [
   _Technician(

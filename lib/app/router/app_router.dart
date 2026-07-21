@@ -11,6 +11,7 @@ import '../../features/admin/presentation/pages/users_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/customer/domain/repositories/category_repository.dart';
 import '../../features/customer/presentation/pages/chat_page.dart';
 import '../../features/customer/presentation/pages/create_order_page.dart';
 import '../../features/customer/presentation/pages/home_page.dart';
@@ -32,7 +33,10 @@ import '../../shared/widgets/navigation/technician_bottom_navigation.dart';
 import 'app_routes.dart';
 
 final class AppRouter {
-  AppRouter({required AuthRepository authRepository})
+  AppRouter({
+    required AuthRepository authRepository,
+    required CategoryRepository categoryRepository,
+  })
     : router = GoRouter(
         routes: [
           GoRoute(
@@ -76,7 +80,9 @@ final class AppRouter {
                 routes: [
                   GoRoute(
                     path: AppRoutes.customerHome,
-                    builder: (context, state) => const HomePage(),
+                    builder: (context, state) => HomePage(
+                      categoryRepository: categoryRepository,
+                    ),
                   ),
                 ],
               ),
