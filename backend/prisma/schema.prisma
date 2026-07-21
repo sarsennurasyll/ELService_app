@@ -15,10 +15,17 @@ enum UserRole {
 
 enum OrderStatus {
   PENDING
+  ACCEPTED
   ACTIVE
   COMPLETED
   CANCELLED
   DISPUTED
+}
+
+enum OfferStatus {
+  ACTIVE
+  ACCEPTED
+  INACTIVE
 }
 
 model User {
@@ -36,6 +43,8 @@ model User {
 
   customerOrders    Order[]         @relation("CustomerOrders")
   technicianOrders  Order[]         @relation("TechnicianOrders")
+  assignedMasterOrders Order[]      @relation("AssignedMasterOrders")
+  offers             Offer[]        @relation("MasterOffers")
   reviewsGiven      Review[]        @relation("ReviewsGiven")
   reviewsReceived   Review[]        @relation("ReviewsReceived")
   messages          Message[]
@@ -64,6 +73,7 @@ model Order {
 
   customerId   String
   technicianId String?
+  assignedMasterId String?
   categoryId   String
 
   createdAt DateTime @default(now())
@@ -71,9 +81,29 @@ model Order {
 
   customer     User          @relation("CustomerOrders", fields: [customerId], references: [id])
   technician   User?         @relation("TechnicianOrders", fields: [technicianId], references: [id])
+  assignedMaster User?       @relation("AssignedMasterOrders", fields: [assignedMasterId], references: [id])
   category     Category      @relation(fields: [categoryId], references: [id])
+  offers       Offer[]
   review       Review?
   conversation Conversation?
+}
+
+model Offer {
+  id          String      @id @default(cuid())
+  price       Decimal     @db.Decimal(12, 2)
+  arrivalTime String
+  comment     String?
+  status      OfferStatus @default(ACTIVE)
+  orderId     String
+  masterId    String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  order  Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  master User  @relation("MasterOffers", fields: [masterId], references: [id])
+
+  @@index([orderId])
+  @@unique([orderId, masterId])
 }
 
 model Review {

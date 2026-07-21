@@ -4,6 +4,7 @@ import { authRouter } from './auth.routes';
 import { categoryRouter } from './category.routes';
 import { healthRouter } from './health.routes';
 import { orderRouter } from './order.routes';
+import { offerRouter, orderOfferRouter } from './offer.routes';
 import { userRouter } from './user.routes';
 
 export const apiRouter = Router();
@@ -12,4 +13,6 @@ apiRouter.use('/health', healthRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/categories', categoryRouter);
 apiRouter.use('/orders', orderRouter);
+apiRouter.use('/orders', orderOfferRouter);
+apiRouter.use('/offers', offerRouter);
 apiRouter.use('/users', userRouter);

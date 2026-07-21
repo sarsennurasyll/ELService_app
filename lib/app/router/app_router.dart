@@ -21,6 +21,9 @@ import '../../features/customer/presentation/pages/home_page.dart';
 import '../../features/customer/presentation/pages/order_details_page.dart';
 import '../../features/customer/presentation/pages/orders_page.dart';
 import '../../features/customer/presentation/pages/profile_page.dart';
+import '../../features/proposals/domain/repositories/offer_repository.dart';
+import '../../features/proposals/presentation/pages/offers_page.dart';
+import '../../features/proposals/presentation/pages/send_offer_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/technician/presentation/pages/calendar_page.dart';
 import '../../features/technician/presentation/pages/dashboard_page.dart';
@@ -41,11 +44,20 @@ final class AppRouter {
     required CategoryRepository categoryRepository,
     required OrderRepository orderRepository,
     required UserRepository userRepository,
+    required OfferRepository offerRepository,
     required TokenStorage tokenStorage,
     required ValueNotifier<int> ordersRefreshNotifier,
   })
     : router = GoRouter(
         routes: [
+          GoRoute(
+            path: AppRoutes.customerOffers,
+            builder: (context, state) => OffersPage(orderId: state.pathParameters['id']!, repository: offerRepository),
+          ),
+          GoRoute(
+            path: AppRoutes.technicianSendOffer,
+            builder: (context, state) => SendOfferPage(orderId: state.pathParameters['id']!, repository: offerRepository),
+          ),
           GoRoute(
             path: AppRoutes.root,
             builder: (context, state) => const SplashPage(),

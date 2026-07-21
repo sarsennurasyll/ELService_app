@@ -15,6 +15,9 @@ import '../features/customer/data/repositories/user_repository_impl.dart';
 import '../features/customer/domain/repositories/category_repository.dart';
 import '../features/customer/domain/repositories/order_repository.dart';
 import '../features/customer/domain/repositories/user_repository.dart';
+import '../features/proposals/data/datasources/offer_remote_datasource.dart';
+import '../features/proposals/data/repositories/offer_repository_impl.dart';
+import '../features/proposals/domain/repositories/offer_repository.dart';
 import 'bootstrap/app_config.dart';
 import 'router/app_router.dart';
 
@@ -46,12 +49,16 @@ final class _AppState extends State<App> {
   late final UserRepository _userRepository = UserRepositoryImpl(
     remoteDataSource: UserRemoteDataSourceImpl(apiClient: _apiClient),
   );
+  late final OfferRepository _offerRepository = OfferRepositoryImpl(
+    remoteDataSource: OfferRemoteDataSourceImpl(apiClient: _apiClient),
+  );
   late final ValueNotifier<int> _ordersRefreshNotifier = ValueNotifier(0);
   late final AppRouter _appRouter = AppRouter(
     authRepository: _authRepository,
     categoryRepository: _categoryRepository,
     orderRepository: _orderRepository,
     userRepository: _userRepository,
+    offerRepository: _offerRepository,
     tokenStorage: _tokenStorage,
     ordersRefreshNotifier: _ordersRefreshNotifier,
   );
