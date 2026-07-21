@@ -58,6 +58,7 @@ model Order {
   address      String?
   price        Decimal?    @db.Decimal(12, 2)
   status       OrderStatus @default(PENDING)
+  preferredDate DateTime?
 
   customerId   String
   technicianId String?
