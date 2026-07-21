@@ -10,6 +10,13 @@ export type CreateUserInput = {
   role: UserRole;
 };
 
+export type UpdateUserProfileInput = {
+  fullName?: string;
+  phone?: string;
+  avatar?: string;
+  city?: string;
+};
+
 /** Репозиторий пользователей через Prisma. */
 export class UserRepository {
   findByEmail(email: string) {
@@ -26,6 +33,13 @@ export class UserRepository {
 
   create(data: CreateUserInput) {
     return prisma.user.create({ data });
+  }
+
+  updateProfile(id: string, data: UpdateUserProfileInput) {
+    return prisma.user.update({
+      where: { id },
+      data,
+    });
   }
 
   toPublicUser(user: User) {

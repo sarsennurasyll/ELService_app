@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/storage/token_storage.dart';
 import '../../features/admin/presentation/pages/analytics_page.dart';
 import '../../features/admin/presentation/pages/dashboard_page.dart'
     as admin_dashboard;
@@ -12,6 +13,8 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/customer/domain/repositories/category_repository.dart';
+import '../../features/customer/domain/repositories/order_repository.dart';
+import '../../features/customer/domain/repositories/user_repository.dart';
 import '../../features/customer/presentation/pages/chat_page.dart';
 import '../../features/customer/presentation/pages/create_order_page.dart';
 import '../../features/customer/presentation/pages/home_page.dart';
@@ -36,6 +39,10 @@ final class AppRouter {
   AppRouter({
     required AuthRepository authRepository,
     required CategoryRepository categoryRepository,
+    required OrderRepository orderRepository,
+    required UserRepository userRepository,
+    required TokenStorage tokenStorage,
+    required ValueNotifier<int> ordersRefreshNotifier,
   })
     : router = GoRouter(
         routes: [
@@ -57,13 +64,21 @@ final class AppRouter {
           ),
           GoRoute(
             path: AppRoutes.customerCreateOrder,
-            builder: (context, state) => const CreateOrderPage(),
+            builder: (context, state) => CreateOrderPage(
+              categoryRepository: categoryRepository,
+              orderRepository: orderRepository,
+              tokenStorage: tokenStorage,
+              ordersRefreshNotifier: ordersRefreshNotifier,
+            ),
           ),
           GoRoute(
             path: AppRoutes.customerOrderDetails,
             builder: (context, state) {
               final orderId = state.pathParameters['id'] ?? '1';
-              return OrderDetailsPage(orderId: orderId);
+              return OrderDetailsPage(
+                orderId: orderId,
+                orderRepository: orderRepository,
+              );
             },
           ),
           StatefulShellRoute.indexedStack(
@@ -90,7 +105,10 @@ final class AppRouter {
                 routes: [
                   GoRoute(
                     path: AppRoutes.customerOrders,
-                    builder: (context, state) => const OrdersPage(),
+                    builder: (context, state) => OrdersPage(
+                      orderRepository: orderRepository,
+                      ordersRefreshNotifier: ordersRefreshNotifier,
+                    ),
                   ),
                 ],
               ),
@@ -106,7 +124,9 @@ final class AppRouter {
                 routes: [
                   GoRoute(
                     path: AppRoutes.customerProfile,
-                    builder: (context, state) => const ProfilePage(),
+                    builder: (context, state) => ProfilePage(
+                      userRepository: userRepository,
+                    ),
                   ),
                 ],
               ),

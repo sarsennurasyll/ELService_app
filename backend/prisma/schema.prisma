@@ -26,6 +26,8 @@ model User {
   fullName     String
   email        String   @unique
   phone        String?
+  avatar       String?
+  city         String?
   passwordHash String
   role         UserRole
 
