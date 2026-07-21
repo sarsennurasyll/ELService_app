@@ -1,19 +1,39 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_shadows.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/storage/token_storage.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/widgets/layout/app_top_bar.dart';
 import '../../../../shared/widgets/layout/screen.dart';
+import '../../domain/models/category.dart';
+import '../../domain/models/order.dart';
+import '../../domain/repositories/category_repository.dart';
+import '../../domain/repositories/order_repository.dart';
 
 final class CreateOrderPage extends StatefulWidget {
-  const CreateOrderPage({super.key});
+  const CreateOrderPage({
+    required this.categoryRepository,
+    required this.orderRepository,
+    required this.tokenStorage,
+    required this.ordersRefreshNotifier,
+    super.key,
+  });
+
+  final CategoryRepository categoryRepository;
+  final OrderRepository orderRepository;
+  final TokenStorage tokenStorage;
+  final ValueNotifier<int> ordersRefreshNotifier;
 
   @override
   State<CreateOrderPage> createState() => _CreateOrderPageState();
@@ -25,13 +45,9 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
   var _selectedCategoryIndex = 0;
   var _selectedTimeIndex = 1;
   var _photoCount = 2;
-
-  static const _categories = [
-    _CategoryOption(label: 'Fridge', icon: Icons.kitchen_outlined),
-    _CategoryOption(label: 'Washer', icon: Icons.local_laundry_service_outlined),
-    _CategoryOption(label: 'AC', icon: Icons.air_outlined),
-    _CategoryOption(label: 'TV', icon: Icons.tv_outlined),
-  ];
+  var _isSubmitting = false;
+  late final Future<Result<List<Category>>> _categoriesFuture =
+      widget.categoryRepository.getCategories();
 
   static const _timeSlots = [
     'Today · 14:00 – 16:00',
@@ -40,23 +56,11 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
     'Wed 16 · 10:00 – 12:00',
   ];
 
-  static const _applianceModels = [
-    'Samsung Refrigerator RB37',
-    'LG Washer TwinWash',
-    'Haier AC Split 12',
-    'Sony Bravia XR',
-  ];
-
   @override
   void initState() {
     super.initState();
-    _descriptionController = TextEditingController(
-      text:
-          'Water leaking from bottom of the fridge. Freezer is still cold but the main compartment is warm.',
-    );
-    _addressController = TextEditingController(
-      text: 'Respublika Ave 14, Apt 42',
-    );
+    _descriptionController = TextEditingController();
+    _addressController = TextEditingController();
   }
 
   @override
@@ -83,12 +87,43 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
               children: [
                 const _StepIndicator(currentStep: 4, totalSteps: 4),
                 const SizedBox(height: AppSpacing.space16),
-                _CategorySection(
-                  categories: _categories,
-                  selectedIndex: _selectedCategoryIndex,
-                  selectedModel: _applianceModels[_selectedCategoryIndex],
-                  onCategorySelected: (index) {
-                    setState(() => _selectedCategoryIndex = index);
+                FutureBuilder<Result<List<Category>>>(
+                  future: _categoriesFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: AppSpacing.space96,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final result = snapshot.data;
+                    if (result is ErrorResult<List<Category>>) {
+                      return _CategoryLoadError(message: result.failure.message);
+                    }
+                    if (result is Success<List<Category>>) {
+                      final categories = result.value.take(4).toList();
+                      if (categories.isEmpty) {
+                        return const _CategoryLoadError(
+                          message: 'Категории пока не добавлены',
+                        );
+                      }
+                      return _CategorySection(
+                        categories: categories,
+                        selectedIndex: _selectedCategoryIndex,
+                        onCategorySelected: (index) {
+                          setState(() => _selectedCategoryIndex = index);
+                        },
+                      );
+                    }
+
+                    return const _CategoryLoadError(
+                      message: 'Не удалось загрузить категории',
+                    );
                   },
                 ),
                 const SizedBox(height: AppSpacing.space16),
@@ -157,15 +192,83 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
               padding: const EdgeInsets.all(AppSpacing.space20),
               child: PrimaryButton(
                 label: 'Submit request',
-                onPressed: () {
-                  // TODO: отправить заказ.
-                },
+                onPressed: _submitOrder,
+                isLoading: _isSubmitting,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _submitOrder() async {
+    final categoriesResult = await _categoriesFuture;
+    if (categoriesResult is! Success<List<Category>>) {
+      _showError('Не удалось загрузить категории');
+      return;
+    }
+
+    final categories = categoriesResult.value.take(4).toList();
+    if (_selectedCategoryIndex >= categories.length) {
+      _showError('Выберите категорию');
+      return;
+    }
+
+    final customerId = await _currentCustomerId();
+    if (customerId == null) {
+      _showError('Не удалось определить пользователя');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    final result = await widget.orderRepository.createOrder(
+      Order(
+        id: '',
+        customerId: customerId,
+        categoryId: categories[_selectedCategoryIndex].id,
+        status: 'PENDING',
+        description: _descriptionController.text.trim(),
+        address: _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _isSubmitting = false);
+    if (result is ErrorResult<Order>) {
+      _showError(result.failure.message);
+      return;
+    }
+
+    widget.ordersRefreshNotifier.value += 1;
+    context.go(AppRoutes.customerOrders);
+  }
+
+  Future<String?> _currentCustomerId() async {
+    final session = await widget.tokenStorage.getSession();
+    if (session == null) {
+      return null;
+    }
+
+    try {
+      final json = jsonDecode(session);
+      final user = json is Map ? json['user'] : null;
+      final id = user is Map ? user['id'] : null;
+      return id is String && id.isNotEmpty ? id : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -202,13 +305,11 @@ final class _CategorySection extends StatelessWidget {
   const _CategorySection({
     required this.categories,
     required this.selectedIndex,
-    required this.selectedModel,
     required this.onCategorySelected,
   });
 
-  final List<_CategoryOption> categories;
+  final List<Category> categories;
   final int selectedIndex;
-  final String selectedModel;
   final ValueChanged<int> onCategorySelected;
 
   @override
@@ -254,7 +355,7 @@ final class _CategorySection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.large),
                   ),
                   child: Icon(
-                    categories[selectedIndex].icon,
+                    _categoryIcon(categories[selectedIndex]),
                     size: AppSpacing.space24,
                     color: AppColors.primary,
                   ),
@@ -273,7 +374,7 @@ final class _CategorySection extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.space4),
                     Text(
-                      selectedModel,
+                      categories[selectedIndex].name,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.foreground,
                         fontWeight: FontWeight.w600,
@@ -302,7 +403,7 @@ final class _CategoryChip extends StatelessWidget {
     required this.onTap,
   });
 
-  final _CategoryOption category;
+  final Category category;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -322,7 +423,7 @@ final class _CategoryChip extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                category.icon,
+                _categoryIcon(category),
                 size: AppSpacing.space24,
                 color: isSelected
                     ? AppColors.surface
@@ -330,7 +431,7 @@ final class _CategoryChip extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.space4),
               Text(
-                category.label,
+                category.name,
                 style: AppTextStyles.labelSmall.copyWith(
                   color: isSelected
                       ? AppColors.surface
@@ -613,9 +714,32 @@ final class _EstimatedRangeCard extends StatelessWidget {
   }
 }
 
-final class _CategoryOption {
-  const _CategoryOption({required this.label, required this.icon});
+final class _CategoryLoadError extends StatelessWidget {
+  const _CategoryLoadError({required this.message});
 
-  final String label;
-  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: AppSpacing.space96,
+      child: Center(
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+        ),
+      ),
+    );
+  }
+}
+
+IconData _categoryIcon(Category category) {
+  return switch ((category.icon ?? category.name).toLowerCase()) {
+    'refrigerator' || 'fridge' => Icons.kitchen_outlined,
+    'washing machine' || 'washer' => Icons.local_laundry_service_outlined,
+    'air conditioner' || 'ac' => Icons.air_outlined,
+    'tv' || 'television' => Icons.tv_outlined,
+    _ => Icons.build_outlined,
+  };
 }

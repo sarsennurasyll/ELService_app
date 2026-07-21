@@ -1,12 +1,11 @@
 import '../../domain/models/order.dart';
 import '../models/order_dto.dart';
 
-/// Маппер OrderDto ↔ Order.
+/// Преобразует DTO заказа в доменную модель.
 final class OrderMapper {
   const OrderMapper();
 
   Order fromDto(OrderDto dto) {
-    // TODO: расширить маппинг по полям Backend.
     return Order(
       id: dto.id,
       customerId: dto.customerId,
@@ -16,11 +15,11 @@ final class OrderMapper {
       technicianId: dto.technicianId,
       address: dto.address,
       price: dto.price,
+      preferredDate: dto.preferredDate,
     );
   }
 
   OrderDto toDto(Order entity) {
-    // TODO: расширить маппинг по полям Backend.
     return OrderDto(
       id: entity.id,
       customerId: entity.customerId,
@@ -30,6 +29,7 @@ final class OrderMapper {
       technicianId: entity.technicianId,
       address: entity.address,
       price: entity.price,
+      preferredDate: entity.preferredDate,
     );
   }
 }

@@ -9,6 +9,7 @@ final class Order {
     this.technicianId,
     this.address,
     this.price,
+    this.preferredDate,
   });
 
   final String id;
@@ -19,4 +20,5 @@ final class Order {
   final String? technicianId;
   final String? address;
   final double? price;
+  final DateTime? preferredDate;
 }
