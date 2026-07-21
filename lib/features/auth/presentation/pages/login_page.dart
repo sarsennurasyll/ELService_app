@@ -6,12 +6,64 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/widgets/layout/screen.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../utils/auth_error_message.dart';
 
-final class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+final class LoginPage extends StatefulWidget {
+  const LoginPage({required this.authRepository, super.key});
+
+  final AuthRepository authRepository;
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+final class _LoginPageState extends State<LoginPage> {
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
+  var _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    FocusScope.of(context).unfocus();
+    setState(() => _isSubmitting = true);
+
+    final result = await widget.authRepository.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    switch (result) {
+      case Success():
+        context.go(AppRoutes.customerHome);
+      case ErrorResult(:final failure):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authErrorMessage(failure))),
+        );
+        setState(() => _isSubmitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +81,15 @@ final class LoginPage extends StatelessWidget {
           children: [
             const _Header(),
             const SizedBox(height: AppSpacing.space32),
-            const _CredentialsForm(),
+            _CredentialsForm(
+              emailController: _emailController,
+              passwordController: _passwordController,
+            ),
             const SizedBox(height: AppSpacing.space24),
             PrimaryButton(
               label: 'Sign In',
-              onPressed: () => context.go(AppRoutes.customerHome),
+              isLoading: _isSubmitting,
+              onPressed: _isSubmitting ? null : _signIn,
             ),
             const SizedBox(height: AppSpacing.space12),
             const _SocialDivider(),
@@ -108,20 +164,28 @@ final class _Header extends StatelessWidget {
 }
 
 final class _CredentialsForm extends StatelessWidget {
-  const _CredentialsForm();
+  const _CredentialsForm({
+    required this.emailController,
+    required this.passwordController,
+  });
+
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const AppTextField(
+        AppTextField(
+          controller: emailController,
           label: 'EMAIL',
           hint: 'email@example.com',
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
         ),
         const SizedBox(height: AppSpacing.space16),
-        const AppTextField(
+        AppTextField(
+          controller: passwordController,
           label: 'PASSWORD',
           isPassword: true,
           textInputAction: TextInputAction.done,

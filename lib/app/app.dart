@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../core/config/api_config.dart';
+import '../core/network/api_client.dart';
+import '../core/storage/token_storage.dart';
+import '../features/auth/data/datasources/auth_remote_datasource.dart';
+import '../features/auth/data/repositories/auth_repository_impl.dart';
+import '../features/auth/domain/repositories/auth_repository.dart';
 import 'bootstrap/app_config.dart';
+import 'router/app_router.dart';
 
 final class App extends StatefulWidget {
   const App({required this.config, super.key});
@@ -12,25 +19,24 @@ final class App extends StatefulWidget {
 }
 
 final class _AppState extends State<App> {
-  // Временная конфигурация до подключения полноценного Router.
-  late final RouterConfig<Object> _routerConfig = RouterConfig<Object>(
-    routerDelegate: _TemporaryRouterDelegate(),
+  late final TokenStorage _tokenStorage = SecureTokenStorage();
+  late final ApiClient _apiClient = ApiClient(
+    config: ApiConfig(baseUrl: widget.config.apiBaseUrl),
+    tokenStorage: _tokenStorage,
+  );
+  late final AuthRepository _authRepository = AuthRepositoryImpl(
+    remoteDataSource: AuthRemoteDataSourceImpl(apiClient: _apiClient),
+    tokenStorage: _tokenStorage,
+  );
+  late final AppRouter _appRouter = AppRouter(
+    authRepository: _authRepository,
   );
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: widget.config.appName,
-      routerConfig: _routerConfig,
+      routerConfig: _appRouter.router,
     );
   }
-}
-
-final class _TemporaryRouterDelegate extends RouterDelegate<Object>
-    with ChangeNotifier {
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
-
-  @override
-  Future<void> setNewRoutePath(Object configuration) => Future.value();
 }

@@ -8,6 +8,7 @@ import '../../features/admin/presentation/pages/orders_page.dart'
     as admin_orders;
 import '../../features/admin/presentation/pages/settings_page.dart';
 import '../../features/admin/presentation/pages/users_page.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/customer/presentation/pages/chat_page.dart';
@@ -31,7 +32,7 @@ import '../../shared/widgets/navigation/technician_bottom_navigation.dart';
 import 'app_routes.dart';
 
 final class AppRouter {
-  AppRouter()
+  AppRouter({required AuthRepository authRepository})
     : router = GoRouter(
         routes: [
           GoRoute(
@@ -40,11 +41,15 @@ final class AppRouter {
           ),
           GoRoute(
             path: AppRoutes.login,
-            builder: (context, state) => const LoginPage(),
+            builder: (context, state) => LoginPage(
+              authRepository: authRepository,
+            ),
           ),
           GoRoute(
             path: AppRoutes.register,
-            builder: (context, state) => const RegisterPage(),
+            builder: (context, state) => RegisterPage(
+              authRepository: authRepository,
+            ),
           ),
           GoRoute(
             path: AppRoutes.customerCreateOrder,

@@ -1,6 +1,4 @@
 /// DTO пользователя.
-///
-/// TODO: добавить fromJson / toJson после контракта Backend.
 final class UserDto {
   const UserDto({
     required this.id,
@@ -15,4 +13,14 @@ final class UserDto {
   final String name;
   final String role;
   final String? phone;
+
+  factory UserDto.fromMap(Map<String, dynamic> map) {
+    return UserDto(
+      id: map['id'] as String? ?? '',
+      email: map['email'] as String? ?? '',
+      name: map['fullName'] as String? ?? '',
+      role: map['role'] as String? ?? '',
+      phone: map['phone'] as String?,
+    );
+  }
 }

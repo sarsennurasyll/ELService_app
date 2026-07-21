@@ -19,13 +19,7 @@ final class LoginResponseDto {
     return LoginResponseDto(
       accessToken: map['accessToken'] as String? ?? '',
       refreshToken: map['refreshToken'] as String? ?? '',
-      user: UserDto(
-        id: userMap['id'] as String? ?? '',
-        email: userMap['email'] as String? ?? '',
-        name: userMap['name'] as String? ?? '',
-        role: userMap['role'] as String? ?? '',
-        phone: userMap['phone'] as String?,
-      ),
+      user: UserDto.fromMap(userMap),
     );
   }
 }

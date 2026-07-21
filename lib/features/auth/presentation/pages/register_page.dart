@@ -5,14 +5,19 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/widgets/layout/app_top_bar.dart';
 import '../../../../shared/widgets/layout/screen.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../utils/auth_error_message.dart';
 
 final class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  const RegisterPage({required this.authRepository, super.key});
+
+  final AuthRepository authRepository;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -22,15 +27,18 @@ final class _RegisterPageState extends State<RegisterPage> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
   var _isCustomer = true;
   var _hasAcceptedTerms = true;
+  var _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: 'Aigerim Bekova');
-    _phoneController = TextEditingController(text: '+7 700 123 45 67');
-    _emailController = TextEditingController(text: 'aigerim@example.com');
+    _nameController = TextEditingController();
+    _phoneController = TextEditingController();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
   }
 
   @override
@@ -38,7 +46,35 @@ final class _RegisterPageState extends State<RegisterPage> {
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _register() async {
+    FocusScope.of(context).unfocus();
+    setState(() => _isSubmitting = true);
+
+    final result = await widget.authRepository.register(
+      fullName: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      role: _isCustomer ? 'CUSTOMER' : 'TECHNICIAN',
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    switch (result) {
+      case Success():
+        context.go(AppRoutes.customerHome);
+      case ErrorResult(:final failure):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authErrorMessage(failure))),
+        );
+        setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -56,7 +92,8 @@ final class _RegisterPageState extends State<RegisterPage> {
             padding: const EdgeInsets.all(AppSpacing.space24),
             child: PrimaryButton(
               label: 'Create Account',
-              onPressed: () => context.go(AppRoutes.customerHome),
+              isLoading: _isSubmitting,
+              onPressed: _isSubmitting ? null : _register,
             ),
           ),
         ),
@@ -97,6 +134,7 @@ final class _RegisterPageState extends State<RegisterPage> {
               nameController: _nameController,
               phoneController: _phoneController,
               emailController: _emailController,
+              passwordController: _passwordController,
             ),
             const SizedBox(height: AppSpacing.space16),
             _TermsAgreement(
@@ -191,11 +229,13 @@ final class _RegisterForm extends StatelessWidget {
     required this.nameController,
     required this.phoneController,
     required this.emailController,
+    required this.passwordController,
   });
 
   final TextEditingController nameController;
   final TextEditingController phoneController;
   final TextEditingController emailController;
+  final TextEditingController passwordController;
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +261,8 @@ final class _RegisterForm extends StatelessWidget {
           textInputAction: TextInputAction.next,
         ),
         const SizedBox(height: AppSpacing.space12),
-        const AppTextField(
+        AppTextField(
+          controller: passwordController,
           label: 'PASSWORD',
           isPassword: true,
           textInputAction: TextInputAction.done,

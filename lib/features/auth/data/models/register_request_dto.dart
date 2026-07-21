@@ -5,18 +5,24 @@ final class RegisterRequestDto {
   const RegisterRequestDto({
     required this.email,
     required this.password,
-    required this.name,
+    required this.fullName,
+    required this.phone,
+    required this.role,
   });
 
   final String email;
   final String password;
-  final String name;
+  final String fullName;
+  final String phone;
+  final String role;
 
   Map<String, dynamic> toMap() {
     return {
       'email': email,
       'password': password,
-      'name': name,
+      'fullName': fullName,
+      'phone': phone,
+      'role': role,
     };
   }
 }

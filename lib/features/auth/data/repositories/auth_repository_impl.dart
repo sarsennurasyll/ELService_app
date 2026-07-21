@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../core/errors/api_exception.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/network_exception.dart';
@@ -46,14 +48,18 @@ final class AuthRepositoryImpl implements AuthRepository {
   Future<Result<Session>> register({
     required String email,
     required String password,
-    required String name,
+    required String fullName,
+    required String phone,
+    required String role,
   }) async {
     try {
       final response = await _remoteDataSource.register(
         authMapper.toRegisterRequest(
           email: email,
           password: password,
-          name: name,
+          fullName: fullName,
+          phone: phone,
+          role: role,
         ),
       );
       final session = sessionMapper.fromLoginResponse(response);
@@ -100,11 +106,28 @@ final class AuthRepositoryImpl implements AuthRepository {
   Future<void> _persistSession(Session session) async {
     await _tokenStorage.saveAccessToken(session.accessToken);
     await _tokenStorage.saveRefreshToken(session.refreshToken);
+    await _tokenStorage.saveSession(
+      jsonEncode({
+        'user': {
+          'id': session.user.id,
+          'email': session.user.email,
+          'name': session.user.name,
+          'role': session.user.role,
+          'phone': session.user.phone,
+        },
+        'accessToken': session.accessToken,
+        'refreshToken': session.refreshToken,
+      }),
+    );
   }
 
   Failure _mapFailure(Exception error) {
     if (error is ApiException) {
-      return Failure(message: error.message, code: error.code);
+      return Failure(
+        message: error.message,
+        code: error.code,
+        statusCode: error.statusCode,
+      );
     }
     if (error is NetworkException) {
       return Failure(message: error.message);
