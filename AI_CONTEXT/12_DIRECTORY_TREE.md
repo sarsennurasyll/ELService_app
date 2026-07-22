@@ -1,0 +1,417 @@
+# Дерево проекта
+
+Ниже описано дерево проекта без `node_modules`, build-артефактов и внутренних файлов `.git`.
+
+## Корень
+
+```text
+ELService/
+  AGENTS.md
+  README.md
+  analysis_options.yaml
+  pubspec.yaml
+  pubspec.lock
+  lib/
+  backend/
+  ELService-design/
+  android/
+  ios/
+  web/
+  windows/
+  linux/
+  macos/
+  AI_CONTEXT/
+```
+
+## Flutter: lib
+
+```text
+lib/
+  main.dart
+  app/
+    app.dart
+    bootstrap/
+      app_config.dart
+      app_environment.dart
+      bootstrap.dart
+    router/
+      app_router.dart
+      app_routes.dart
+    theme/
+      app_colors.dart
+      app_duration.dart
+      app_radius.dart
+      app_shadows.dart
+      app_spacing.dart
+      app_text_styles.dart
+      app_theme.dart
+  core/
+    config/
+      api_config.dart
+    constants/
+      api_constants.dart
+    errors/
+      api_exception.dart
+      failure.dart
+      network_exception.dart
+    extensions/
+      result_extensions.dart
+      string_extensions.dart
+    network/
+      api_client.dart
+      api_endpoints.dart
+      interceptors/
+        auth_interceptor.dart
+        logging_interceptor.dart
+    storage/
+      local_storage.dart
+      token_storage.dart
+    utils/
+      logger.dart
+      result.dart
+  shared/
+    widgets/
+      buttons/
+        primary_button.dart
+      cards/
+        app_card.dart
+      inputs/
+        app_text_field.dart
+      layout/
+        app_top_bar.dart
+        screen.dart
+      navigation/
+        admin_bottom_navigation.dart
+        customer_bottom_navigation.dart
+        technician_bottom_navigation.dart
+  features/
+    admin/
+    auth/
+    customer/
+    proposals/
+    splash/
+    technician/
+```
+
+## Flutter: auth feature
+
+```text
+lib/features/auth/
+  data/
+    datasources/
+      auth_remote_datasource.dart
+    mappers/
+      auth_mapper.dart
+      session_mapper.dart
+      user_mapper.dart
+    models/
+      login_request_dto.dart
+      login_response_dto.dart
+      refresh_token_dto.dart
+      register_request_dto.dart
+      user_dto.dart
+    repositories/
+      auth_repository_impl.dart
+  domain/
+    models/
+      session.dart
+      user.dart
+    repositories/
+      auth_repository.dart
+  presentation/
+    pages/
+      login_page.dart
+      register_page.dart
+    utils/
+      auth_error_message.dart
+```
+
+## Flutter: customer feature
+
+```text
+lib/features/customer/
+  data/
+    datasources/
+      category_remote_datasource.dart
+      chat_remote_datasource.dart
+      customer_remote_datasource.dart
+      order_remote_datasource.dart
+      user_remote_datasource.dart
+    mappers/
+      category_mapper.dart
+      chat_mapper.dart
+      customer_mapper.dart
+      message_mapper.dart
+      order_mapper.dart
+      review_mapper.dart
+      user_mapper.dart
+    models/
+      category_dto.dart
+      chat_dto.dart
+      customer_dto.dart
+      message_dto.dart
+      order_dto.dart
+      review_dto.dart
+      user_dto.dart
+    repositories/
+      category_repository_impl.dart
+      chat_repository_impl.dart
+      customer_repository_impl.dart
+      order_repository_impl.dart
+      user_repository_impl.dart
+  domain/
+    models/
+      category.dart
+      chat.dart
+      customer.dart
+      message.dart
+      order.dart
+      review.dart
+      user.dart
+    repositories/
+      category_repository.dart
+      chat_repository.dart
+      customer_repository.dart
+      order_repository.dart
+      user_repository.dart
+  presentation/
+    pages/
+      chat_messages_page.dart
+      chat_page.dart
+      create_order_page.dart
+      home_page.dart
+      order_details_page.dart
+      orders_page.dart
+      profile_page.dart
+    providers/
+      chat_providers.dart
+```
+
+## Flutter: proposals feature
+
+```text
+lib/features/proposals/
+  data/
+    datasources/
+      offer_remote_datasource.dart
+    mappers/
+      offer_mapper.dart
+    models/
+      offer_dto.dart
+    repositories/
+      offer_repository_impl.dart
+  domain/
+    models/
+      offer.dart
+    repositories/
+      offer_repository.dart
+  presentation/
+    pages/
+      offers_page.dart
+      send_offer_page.dart
+```
+
+## Flutter: splash feature
+
+```text
+lib/features/splash/
+  presentation/
+    pages/
+      splash_page.dart
+```
+
+## Flutter: technician feature
+
+```text
+lib/features/technician/
+  data/
+    datasources/
+      technician_remote_datasource.dart
+    mappers/
+      technician_mapper.dart
+    models/
+      technician_dto.dart
+    repositories/
+      technician_repository_impl.dart
+  domain/
+    models/
+      technician.dart
+    repositories/
+      technician_repository.dart
+  presentation/
+    pages/
+      calendar_page.dart
+      dashboard_page.dart
+      earnings_page.dart
+      orders_page.dart
+      profile_page.dart
+```
+
+## Flutter: admin feature
+
+```text
+lib/features/admin/
+  data/
+    datasources/
+      admin_remote_datasource.dart
+    mappers/
+      admin_analytics_mapper.dart
+    models/
+      admin_analytics_dto.dart
+    repositories/
+      admin_repository_impl.dart
+  domain/
+    models/
+      admin_analytics.dart
+    repositories/
+      admin_repository.dart
+  presentation/
+    pages/
+      analytics_page.dart
+      dashboard_page.dart
+      orders_page.dart
+      settings_page.dart
+      users_page.dart
+```
+
+## Backend
+
+```text
+backend/
+  Dockerfile
+  README.md
+  docker-compose.yml
+  nodemon.json
+  package.json
+  package-lock.json
+  tsconfig.json
+  prisma/
+    schema.prisma
+    migrations/
+      migration_lock.toml
+      20260720183016_init_auth/
+        migration.sql
+      20260721120000_add_order_preferred_date/
+        migration.sql
+      20260721130000_add_user_profile_fields/
+        migration.sql
+      20260721140000_add_offers/
+        migration.sql
+  src/
+    app.ts
+    server.ts
+    config/
+      app.config.ts
+      env.ts
+    controllers/
+      auth.controller.ts
+      category.controller.ts
+      chat.controller.ts
+      health.controller.ts
+      offer.controller.ts
+      order.controller.ts
+      user.controller.ts
+    middlewares/
+      auth.middleware.ts
+      error.middleware.ts
+      validate.middleware.ts
+    prisma/
+      client.ts
+    repositories/
+      category.repository.ts
+      chat.repository.ts
+      offer.repository.ts
+      order.repository.ts
+      user.repository.ts
+    routes/
+      auth.routes.ts
+      category.routes.ts
+      chat.routes.ts
+      health.routes.ts
+      index.ts
+      offer.routes.ts
+      order.routes.ts
+      user.routes.ts
+    services/
+      auth.service.ts
+      category.service.ts
+      chat.service.ts
+      offer.service.ts
+      order.service.ts
+      user.service.ts
+    types/
+      auth.types.ts
+      express.types.ts
+    utils/
+      api-response.ts
+      app-error.ts
+      async-handler.ts
+      jwt.ts
+      password.ts
+    validators/
+      auth.schemas.ts
+      chat.schemas.ts
+      offer.schemas.ts
+      order.schemas.ts
+      user.schemas.ts
+```
+
+## React/Vite дизайн-референс
+
+```text
+ELService-design/
+  AGENTS.md
+  components.json
+  package.json
+  vite.config.ts
+  tsconfig.json
+  src/
+    styles.css
+    router.tsx
+    routeTree.gen.ts
+    routes/
+      index.tsx
+      home.tsx
+      login.tsx
+      register.tsx
+      orders.tsx
+      order.new.tsx
+      order.offers.tsx
+      chat.tsx
+      chat.$id.tsx
+      profile.tsx
+      tech.index.tsx
+      admin.index.tsx
+      и другие route-файлы
+    components/
+      mobile/
+        BottomNav.tsx
+        MobileShell.tsx
+        Screen.tsx
+      ui/
+        button.tsx
+        card.tsx
+        input.tsx
+        dialog.tsx
+        tabs.tsx
+        и другие shadcn/ui компоненты
+```
+
+## AI_CONTEXT
+
+```text
+AI_CONTEXT/
+  01_PROJECT_OVERVIEW.md
+  02_ARCHITECTURE.md
+  03_FRONTEND.md
+  04_BACKEND.md
+  05_DATABASE.md
+  06_API.md
+  07_FEATURES.md
+  08_WORKFLOW.md
+  09_ENVIRONMENT.md
+  10_RUN_PROJECT.md
+  11_KNOWN_PROBLEMS.md
+  12_DIRECTORY_TREE.md
+  13_CHANGELOG.md
+```
