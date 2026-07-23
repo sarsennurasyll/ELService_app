@@ -90,6 +90,7 @@ final class AppRouter {
               return OrderDetailsPage(
                 orderId: orderId,
                 orderRepository: orderRepository,
+                tokenStorage: tokenStorage,
               );
             },
           ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +8,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
@@ -18,19 +21,87 @@ final class OrderDetailsPage extends StatefulWidget {
   const OrderDetailsPage({
     required this.orderId,
     required this.orderRepository,
+    required this.tokenStorage,
     super.key,
   });
 
   final String orderId;
   final OrderRepository orderRepository;
+  final TokenStorage tokenStorage;
 
   @override
   State<OrderDetailsPage> createState() => _OrderDetailsPageState();
 }
 
 final class _OrderDetailsPageState extends State<OrderDetailsPage> {
-  late final Future<Result<Order>> _orderFuture = widget.orderRepository
-      .getOrderById(widget.orderId);
+  late Future<_OrderDetailsLoadState> _orderFuture;
+  String? _runningAction;
+
+  @override
+  void initState() {
+    super.initState();
+    _orderFuture = _loadOrder();
+  }
+
+  Future<_OrderDetailsLoadState> _loadOrder() async {
+    final session = await _currentSession();
+    final result = await widget.orderRepository.getOrderById(widget.orderId);
+    return _OrderDetailsLoadState(result: result, session: session);
+  }
+
+  Future<_CurrentSession?> _currentSession() async {
+    final session = await widget.tokenStorage.getSession();
+    if (session == null) {
+      return null;
+    }
+
+    try {
+      final json = jsonDecode(session);
+      final user = json is Map ? json['user'] : null;
+      final id = user is Map ? user['id'] : null;
+      final role = user is Map ? user['role'] : null;
+      if (id is String && role is String) {
+        return _CurrentSession(id: id, role: role);
+      }
+      return null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  void _reloadOrder() {
+    setState(() {
+      _orderFuture = _loadOrder();
+    });
+  }
+
+  Future<void> _runAction(
+    String action,
+    Future<Result<Order>> Function(String id) request,
+  ) async {
+    setState(() {
+      _runningAction = action;
+    });
+
+    final result = await request(widget.orderId);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _runningAction = null;
+    });
+
+    switch (result) {
+      case Success<Order>():
+        _reloadOrder();
+      case ErrorResult<Order>():
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.failure.message)),
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +112,7 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
         subtitle: widget.orderId,
         onBack: () => context.pop(),
       ),
-      child: FutureBuilder<Result<Order>>(
+      child: FutureBuilder<_OrderDetailsLoadState>(
         future: _orderFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -50,7 +121,8 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
             );
           }
 
-          final result = snapshot.data;
+          final state = snapshot.data;
+          final result = state?.result;
           if (result is ErrorResult<Order>) {
             return Center(
               child: Padding(
@@ -68,6 +140,20 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
           if (result is Success<Order>) {
             return _OrderDetailsContent(
               order: _OrderDetails.fromOrder(result.value),
+              session: state?.session,
+              runningAction: _runningAction,
+              onStart: () => _runAction(
+                'start',
+                widget.orderRepository.startOrder,
+              ),
+              onComplete: () => _runAction(
+                'complete',
+                widget.orderRepository.completeOrder,
+              ),
+              onCancel: () => _runAction(
+                'cancel',
+                widget.orderRepository.cancelOrder,
+              ),
             );
           }
 
@@ -79,9 +165,21 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
 }
 
 final class _OrderDetailsContent extends StatelessWidget {
-  const _OrderDetailsContent({required this.order});
+  const _OrderDetailsContent({
+    required this.order,
+    required this.session,
+    required this.runningAction,
+    required this.onStart,
+    required this.onComplete,
+    required this.onCancel,
+  });
 
   final _OrderDetails order;
+  final _CurrentSession? session;
+  final String? runningAction;
+  final VoidCallback onStart;
+  final VoidCallback onComplete;
+  final VoidCallback onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -109,48 +207,113 @@ final class _OrderDetailsContent extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.space20),
-            child: order.isCompleted
-                ? PrimaryButton(
-                    label: 'Rate technician',
-                    onPressed: () {
-                      // TODO: открыть оценку мастера.
-                    },
-                  )
-                : Row(
-                    children: [
-                      Expanded(
-                        child: PrimaryButton(
-                          label: 'Offers',
-                          variant: PrimaryButtonVariant.outline,
-                          onPressed: () =>
-                              context.push(AppRoutes.offers(order.id)),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.space8),
-                      Expanded(
-                        child: PrimaryButton(
-                          label: 'Chat',
-                          variant: PrimaryButtonVariant.outline,
-                          onPressed: () {
-                            // TODO: открыть чат.
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.space8),
-                      Expanded(
-                        child: PrimaryButton(
-                          label: 'Complete',
-                          onPressed: () {
-                            // TODO: завершить заказ.
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+            child: _OrderActions(
+              order: order,
+              session: session,
+              runningAction: runningAction,
+              onStart: onStart,
+              onComplete: onComplete,
+              onCancel: onCancel,
+            ),
           ),
         ),
       ],
     );
+  }
+}
+
+final class _OrderActions extends StatelessWidget {
+  const _OrderActions({
+    required this.order,
+    required this.session,
+    required this.runningAction,
+    required this.onStart,
+    required this.onComplete,
+    required this.onCancel,
+  });
+
+  final _OrderDetails order;
+  final _CurrentSession? session;
+  final String? runningAction;
+  final VoidCallback onStart;
+  final VoidCallback onComplete;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (order.isCompleted) {
+      return PrimaryButton(
+        label: 'Rate technician',
+        onPressed: () {
+          // TODO: открыть оценку мастера.
+        },
+      );
+    }
+
+    final actions = <Widget>[
+      Expanded(
+        child: PrimaryButton(
+          label: 'Offers',
+          variant: PrimaryButtonVariant.outline,
+          onPressed: () => context.push(AppRoutes.offers(order.id)),
+        ),
+      ),
+      const SizedBox(width: AppSpacing.space8),
+      Expanded(
+        child: PrimaryButton(
+          label: 'Chat',
+          variant: PrimaryButtonVariant.outline,
+          onPressed: () {
+            // TODO: открыть чат.
+          },
+        ),
+      ),
+    ];
+
+    if (_canCancel(order, session)) {
+      actions
+        ..add(const SizedBox(width: AppSpacing.space8))
+        ..add(
+          Expanded(
+            child: PrimaryButton(
+              label: 'Cancel',
+              variant: PrimaryButtonVariant.outline,
+              isLoading: runningAction == 'cancel',
+              onPressed: onCancel,
+            ),
+          ),
+        );
+    }
+
+    if (_canStart(order, session)) {
+      actions
+        ..add(const SizedBox(width: AppSpacing.space8))
+        ..add(
+          Expanded(
+            child: PrimaryButton(
+              label: 'Start',
+              isLoading: runningAction == 'start',
+              onPressed: onStart,
+            ),
+          ),
+        );
+    }
+
+    if (_canComplete(order, session)) {
+      actions
+        ..add(const SizedBox(width: AppSpacing.space8))
+        ..add(
+          Expanded(
+            child: PrimaryButton(
+              label: 'Complete',
+              isLoading: runningAction == 'complete',
+              onPressed: onComplete,
+            ),
+          ),
+        );
+    }
+
+    return Row(children: actions);
   }
 }
 
@@ -164,6 +327,7 @@ final class _StatusBanner extends StatelessWidget {
     final color = switch (status) {
       _OrderStatus.pending => AppColors.warning,
       _OrderStatus.accepted => AppColors.primary,
+      _OrderStatus.inProgress => AppColors.primary,
       _OrderStatus.completed => AppColors.success,
       _OrderStatus.active => AppColors.primary,
       _OrderStatus.cancelled || _OrderStatus.disputed => AppColors.error,
@@ -192,6 +356,7 @@ final class _StatusBanner extends StatelessWidget {
                   switch (status) {
                     _OrderStatus.pending => Icons.directions_car_outlined,
                     _OrderStatus.accepted => Icons.handshake_outlined,
+                    _OrderStatus.inProgress => Icons.build_outlined,
                     _OrderStatus.completed => Icons.check_circle_outline,
                     _OrderStatus.active => Icons.build_outlined,
                     _OrderStatus.cancelled ||
@@ -493,6 +658,7 @@ final class _CostCard extends StatelessWidget {
 enum _OrderStatus {
   pending('Pending'),
   accepted('Accepted'),
+  inProgress('In progress'),
   active('Active'),
   completed('Completed'),
   cancelled('Cancelled'),
@@ -514,9 +680,12 @@ final class _OrderDetails {
     required this.address,
     required this.schedule,
     required this.status,
+    required this.statusValue,
     required this.price,
     required this.isEstimate,
     required this.isCompleted,
+    required this.customerId,
+    required this.assignedMasterId,
   });
 
   final String id;
@@ -528,9 +697,13 @@ final class _OrderDetails {
   final String address;
   final String schedule;
   final _OrderStatus status;
+  final String statusValue;
   final String price;
   final bool isEstimate;
   final bool isCompleted;
+  final String customerId;
+  final String? assignedMasterId;
+
   factory _OrderDetails.fromOrder(Order order) {
     final preferredDate = order.preferredDate;
     return _OrderDetails(
@@ -545,20 +718,59 @@ final class _OrderDetails {
           ? 'Not scheduled'
           : preferredDate.toLocal().toString().substring(0, 16),
       status: _orderStatusFromValue(order.status),
+      statusValue: order.status,
       price: order.price == null ? '—' : '${order.price!.toStringAsFixed(0)} ₸',
       isEstimate: order.price == null,
       isCompleted: order.status == 'COMPLETED',
+      customerId: order.customerId,
+      assignedMasterId: order.assignedMasterId,
     );
   }
+}
+
+final class _OrderDetailsLoadState {
+  const _OrderDetailsLoadState({
+    required this.result,
+    required this.session,
+  });
+
+  final Result<Order> result;
+  final _CurrentSession? session;
+}
+
+final class _CurrentSession {
+  const _CurrentSession({required this.id, required this.role});
+
+  final String id;
+  final String role;
 }
 
 _OrderStatus _orderStatusFromValue(String value) {
   return switch (value) {
     'ACCEPTED' => _OrderStatus.accepted,
+    'IN_PROGRESS' => _OrderStatus.inProgress,
     'ACTIVE' => _OrderStatus.active,
     'COMPLETED' => _OrderStatus.completed,
     'CANCELLED' => _OrderStatus.cancelled,
     'DISPUTED' => _OrderStatus.disputed,
     _ => _OrderStatus.pending,
   };
+}
+
+bool _canStart(_OrderDetails order, _CurrentSession? session) {
+  return session?.role == 'TECHNICIAN' &&
+      order.statusValue == 'ACCEPTED' &&
+      order.assignedMasterId == session?.id;
+}
+
+bool _canComplete(_OrderDetails order, _CurrentSession? session) {
+  return session?.role == 'TECHNICIAN' &&
+      order.statusValue == 'IN_PROGRESS' &&
+      order.assignedMasterId == session?.id;
+}
+
+bool _canCancel(_OrderDetails order, _CurrentSession? session) {
+  return session?.role == 'CUSTOMER' &&
+      order.customerId == session?.id &&
+      const {'PENDING', 'ACCEPTED', 'IN_PROGRESS'}.contains(order.statusValue);
 }

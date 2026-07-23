@@ -34,6 +34,21 @@ export const orderController = {
     sendSuccess(res, data);
   }),
 
+  start: asyncHandler(async (req: Request, res: Response) => {
+    const data = await orderService.startOrder(req.params.id as string);
+    sendSuccess(res, data);
+  }),
+
+  complete: asyncHandler(async (req: Request, res: Response) => {
+    const data = await orderService.completeOrder(req.params.id as string);
+    sendSuccess(res, data);
+  }),
+
+  cancel: asyncHandler(async (req: Request, res: Response) => {
+    const data = await orderService.cancelOrder(req.params.id as string);
+    sendSuccess(res, data);
+  }),
+
   delete: asyncHandler(async (req: Request, res: Response) => {
     await orderService.deleteOrder(req.params.id as string);
     sendSuccess(res, { id: req.params.id });

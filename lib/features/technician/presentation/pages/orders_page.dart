@@ -476,7 +476,7 @@ Color _statusColor(String status) {
   return switch (status) {
     'COMPLETED' => AppColors.success,
     'CANCELLED' || 'DISPUTED' => AppColors.error,
-    'ACCEPTED' || 'ACTIVE' => AppColors.primary,
+    'ACCEPTED' || 'IN_PROGRESS' || 'ACTIVE' => AppColors.primary,
     _ => AppColors.warning,
   };
 }

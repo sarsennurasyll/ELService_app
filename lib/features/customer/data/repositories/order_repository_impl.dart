@@ -46,6 +46,36 @@ final class OrderRepositoryImpl implements OrderRepository {
     }
   }
 
+  @override
+  Future<Result<Order>> startOrder(String id) async {
+    try {
+      final order = await _remoteDataSource.startOrder(id);
+      return Success(orderMapper.fromDto(order));
+    } on Exception catch (error) {
+      return ErrorResult(_mapFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<Order>> completeOrder(String id) async {
+    try {
+      final order = await _remoteDataSource.completeOrder(id);
+      return Success(orderMapper.fromDto(order));
+    } on Exception catch (error) {
+      return ErrorResult(_mapFailure(error));
+    }
+  }
+
+  @override
+  Future<Result<Order>> cancelOrder(String id) async {
+    try {
+      final order = await _remoteDataSource.cancelOrder(id);
+      return Success(orderMapper.fromDto(order));
+    } on Exception catch (error) {
+      return ErrorResult(_mapFailure(error));
+    }
+  }
+
   Failure _mapFailure(Exception error) {
     if (error is ApiException) {
       return Failure(

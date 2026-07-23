@@ -16,6 +16,7 @@ enum UserRole {
 enum OrderStatus {
   PENDING
   ACCEPTED
+  IN_PROGRESS
   ACTIVE
   COMPLETED
   CANCELLED

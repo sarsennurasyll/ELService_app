@@ -1,4 +1,5 @@
 import { CategoryRepository } from '../repositories/category.repository';
+import type { OrderStatus } from '@prisma/client';
 import {
   OrderRepository,
   type CreateOrderInput,
@@ -43,12 +44,53 @@ export class OrderService {
   }
 
   async updateOrder(id: string, input: UpdateOrderInput) {
-    await this.getOrderById(id);
+    const order = await this.getOrderById(id);
+    if (input.status) {
+      this.assertStatusTransition(order.status, input.status);
+    }
     return this.orderRepository.update(id, input);
+  }
+
+  async startOrder(id: string) {
+    return this.updateOrderStatus(id, 'IN_PROGRESS');
+  }
+
+  async completeOrder(id: string) {
+    return this.updateOrderStatus(id, 'COMPLETED');
+  }
+
+  async cancelOrder(id: string) {
+    return this.updateOrderStatus(id, 'CANCELLED');
   }
 
   async deleteOrder(id: string) {
     await this.getOrderById(id);
     await this.orderRepository.delete(id);
+  }
+
+  private async updateOrderStatus(id: string, status: OrderStatus) {
+    const order = await this.getOrderById(id);
+    this.assertStatusTransition(order.status, status);
+    return this.orderRepository.updateStatus(id, status);
+  }
+
+  private assertStatusTransition(from: OrderStatus, to: OrderStatus) {
+    if (from === to) {
+      return;
+    }
+
+    const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
+      PENDING: ['ACCEPTED', 'CANCELLED'],
+      ACCEPTED: ['IN_PROGRESS', 'CANCELLED'],
+      IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
+      ACTIVE: ['COMPLETED', 'CANCELLED'],
+      COMPLETED: [],
+      CANCELLED: [],
+      DISPUTED: [],
+    };
+
+    if (!allowedTransitions[from].includes(to)) {
+      throw new AppError(409, 'Invalid order status transition', 'INVALID_ORDER_STATUS_TRANSITION');
+    }
   }
 }

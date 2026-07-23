@@ -3,6 +3,7 @@ import { z } from 'zod';
 const orderStatusSchema = z.enum([
   'PENDING',
   'ACCEPTED',
+  'IN_PROGRESS',
   'ACTIVE',
   'COMPLETED',
   'CANCELLED',

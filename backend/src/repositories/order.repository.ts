@@ -44,6 +44,13 @@ export class OrderRepository {
     });
   }
 
+  updateStatus(id: string, status: OrderStatus) {
+    return prisma.order.update({
+      where: { id },
+      data: { status },
+    });
+  }
+
   delete(id: string) {
     return prisma.order.delete({ where: { id } });
   }

@@ -9,6 +9,12 @@ abstract interface class OrderRemoteDataSource {
   Future<OrderDto> getOrderById(String id);
 
   Future<OrderDto> createOrder(OrderDto order);
+
+  Future<OrderDto> startOrder(String id);
+
+  Future<OrderDto> completeOrder(String id);
+
+  Future<OrderDto> cancelOrder(String id);
 }
 
 final class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -41,6 +47,26 @@ final class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       ApiEndpoints.orders,
       body: order.toCreateMap(),
     );
+    return _orderFromJson(response['data']);
+  }
+
+  @override
+  Future<OrderDto> startOrder(String id) async {
+    final response = await _apiClient.patch('${ApiEndpoints.orders}/$id/start');
+    return _orderFromJson(response['data']);
+  }
+
+  @override
+  Future<OrderDto> completeOrder(String id) async {
+    final response = await _apiClient.patch(
+      '${ApiEndpoints.orders}/$id/complete',
+    );
+    return _orderFromJson(response['data']);
+  }
+
+  @override
+  Future<OrderDto> cancelOrder(String id) async {
+    final response = await _apiClient.patch('${ApiEndpoints.orders}/$id/cancel');
     return _orderFromJson(response['data']);
   }
 
