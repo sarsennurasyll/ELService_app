@@ -87,6 +87,10 @@ model Order {
   offers       Offer[]
   review       Review?
   conversation Conversation?
+
+  @@index([createdAt])
+  @@index([customerId, createdAt])
+  @@index([assignedMasterId, status])
 }
 
 model Offer {
@@ -122,6 +126,8 @@ model Review {
   order      Order @relation(fields: [orderId], references: [id])
   customer   User  @relation("ReviewsGiven", fields: [customerId], references: [id])
   technician User  @relation("ReviewsReceived", fields: [technicianId], references: [id])
+
+  @@index([technicianId, createdAt])
 }
 
 model Conversation {
@@ -137,6 +143,9 @@ model Conversation {
   userA    User      @relation("ConversationUserA", fields: [userAId], references: [id])
   userB    User      @relation("ConversationUserB", fields: [userBId], references: [id])
   messages Message[]
+
+  @@index([userAId, updatedAt])
+  @@index([userBId, updatedAt])
 }
 
 model Message {
@@ -150,6 +159,8 @@ model Message {
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
   sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
 }
 
 model Notification {
