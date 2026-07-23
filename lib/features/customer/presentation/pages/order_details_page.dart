@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -157,7 +157,7 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
             );
           }
 
-          return const Center(child: Text('Не удалось загрузить заказ'));
+          return const Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°РєР°Р·'));
         },
       ),
     );
@@ -244,9 +244,9 @@ final class _OrderActions extends StatelessWidget {
     if (order.isCompleted) {
       return PrimaryButton(
         label: 'Rate technician',
-        onPressed: () {
-          // TODO: открыть оценку мастера.
-        },
+        onPressed: _canReview(order, session)
+            ? () => context.push(AppRoutes.review(order.id))
+            : null,
       );
     }
 
@@ -263,9 +263,9 @@ final class _OrderActions extends StatelessWidget {
         child: PrimaryButton(
           label: 'Chat',
           variant: PrimaryButtonVariant.outline,
-          onPressed: () {
-            // TODO: открыть чат.
-          },
+          onPressed: _canReview(order, session)
+            ? () => context.push(AppRoutes.review(order.id))
+            : null,
         ),
       ),
     ];
@@ -719,7 +719,7 @@ final class _OrderDetails {
           : preferredDate.toLocal().toString().substring(0, 16),
       status: _orderStatusFromValue(order.status),
       statusValue: order.status,
-      price: order.price == null ? '—' : '${order.price!.toStringAsFixed(0)} ₸',
+      price: order.price == null ? 'вЂ”' : '${order.price!.toStringAsFixed(0)} в‚ё',
       isEstimate: order.price == null,
       isCompleted: order.status == 'COMPLETED',
       customerId: order.customerId,
@@ -774,3 +774,10 @@ bool _canCancel(_OrderDetails order, _CurrentSession? session) {
       order.customerId == session?.id &&
       const {'PENDING', 'ACCEPTED', 'IN_PROGRESS'}.contains(order.statusValue);
 }
+bool _canReview(_OrderDetails order, _CurrentSession? session) {
+  return session?.role == 'CUSTOMER' &&
+      order.customerId == session?.id &&
+      order.statusValue == 'COMPLETED' &&
+      order.assignedMasterId != null;
+}
+

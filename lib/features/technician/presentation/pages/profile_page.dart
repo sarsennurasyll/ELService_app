@@ -1,44 +1,135 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/errors/failure.dart';
+import '../../../../core/storage/token_storage.dart';
+import '../../../../core/utils/result.dart';
+import '../../../../features/reviews/domain/models/master_rating.dart';
+import '../../../../features/reviews/domain/models/review.dart';
+import '../../../../features/reviews/domain/repositories/review_repository.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 
-final class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+final class ProfilePage extends StatefulWidget {
+  const ProfilePage({
+    required this.reviewRepository,
+    required this.tokenStorage,
+    super.key,
+  });
+
+  final ReviewRepository reviewRepository;
+  final TokenStorage tokenStorage;
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+final class _ProfilePageState extends State<ProfilePage> {
+  late Future<_ProfileReviewsState> _reviewsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviewsFuture = _loadReviews();
+  }
+
+  Future<_ProfileReviewsState> _loadReviews() async {
+    final masterId = await _currentMasterId();
+    if (masterId == null) {
+      return const _ProfileReviewsState(
+        rating: ErrorResult(Failure(message: 'Не удалось определить мастера')),
+        reviews: ErrorResult(Failure(message: 'Не удалось определить мастера')),
+      );
+    }
+
+    final rating = await widget.reviewRepository.getMasterRating(masterId);
+    final reviews = await widget.reviewRepository.getMasterReviews(masterId);
+    return _ProfileReviewsState(rating: rating, reviews: reviews);
+  }
+
+  Future<String?> _currentMasterId() async {
+    final session = await widget.tokenStorage.getSession();
+    if (session == null) {
+      return null;
+    }
+
+    try {
+      final json = jsonDecode(session);
+      final user = json is Map ? json['user'] : null;
+      final id = user is Map ? user['id'] : null;
+      return id is String && id.isNotEmpty ? id : null;
+    } on FormatException {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const _ProfileHeader(),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.space20),
-            child: Column(
-              children: [
-                const _ReviewsPreview(),
-                const SizedBox(height: AppSpacing.space16),
-                for (final item in _profileMenuItems) ...[
-                  _ProfileMenuItem(item: item),
-                  if (item != _profileMenuItems.last)
+    return FutureBuilder<_ProfileReviewsState>(
+      future: _reviewsFuture,
+      builder: (context, snapshot) {
+        final state = snapshot.data;
+        final rating = state?.rating;
+        final reviews = state?.reviews;
+        final ratingValue = rating is Success<MasterRating>
+            ? rating.value.averageRating
+            : 0.0;
+        final reviewsCount = rating is Success<MasterRating>
+            ? rating.value.reviewsCount
+            : 0;
+        final reviewItems = reviews is Success<List<Review>>
+            ? reviews.value
+            : const <Review>[];
+
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              _ProfileHeader(
+                rating: ratingValue,
+                reviewsCount: reviewsCount,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.space20),
+                child: Column(
+                  children: [
+                    _ReviewsPreview(
+                      isLoading:
+                          snapshot.connectionState == ConnectionState.waiting,
+                      rating: ratingValue,
+                      reviewsCount: reviewsCount,
+                      reviews: reviewItems,
+                    ),
+                    const SizedBox(height: AppSpacing.space16),
+                    for (final item in _profileMenuItems) ...[
+                      _ProfileMenuItem(item: item),
+                      if (item != _profileMenuItems.last)
+                        const SizedBox(height: AppSpacing.space8),
+                    ],
                     const SizedBox(height: AppSpacing.space8),
-                ],
-                const SizedBox(height: AppSpacing.space8),
-                const _LogOutItem(),
-              ],
-            ),
+                    const _LogOutItem(),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
 final class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader();
+  const _ProfileHeader({
+    required this.rating,
+    required this.reviewsCount,
+  });
+
+  final double rating;
+  final int reviewsCount;
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +204,7 @@ final class _ProfileHeader extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.space20),
-            const _ProfileStatistics(),
+            _ProfileStatistics(rating: rating, reviewsCount: reviewsCount),
           ],
         ),
       ),
@@ -122,17 +213,27 @@ final class _ProfileHeader extends StatelessWidget {
 }
 
 final class _ProfileStatistics extends StatelessWidget {
-  const _ProfileStatistics();
+  const _ProfileStatistics({
+    required this.rating,
+    required this.reviewsCount,
+  });
+
+  final double rating;
+  final int reviewsCount;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Expanded(child: _StatisticCard(label: 'RATING', value: '4.9')),
-        SizedBox(width: AppSpacing.space8),
-        Expanded(child: _StatisticCard(label: 'JOBS', value: '154')),
-        SizedBox(width: AppSpacing.space8),
-        Expanded(child: _StatisticCard(label: 'ACCEPT', value: '98%')),
+        Expanded(
+          child: _StatisticCard(label: 'RATING', value: _ratingText(rating)),
+        ),
+        const SizedBox(width: AppSpacing.space8),
+        Expanded(
+          child: _StatisticCard(label: 'REVIEWS', value: '$reviewsCount'),
+        ),
+        const SizedBox(width: AppSpacing.space8),
+        const Expanded(child: _StatisticCard(label: 'ACCEPT', value: '98%')),
       ],
     );
   }
@@ -179,21 +280,28 @@ final class _StatisticCard extends StatelessWidget {
 }
 
 final class _ReviewsPreview extends StatelessWidget {
-  const _ReviewsPreview();
+  const _ReviewsPreview({
+    required this.isLoading,
+    required this.rating,
+    required this.reviewsCount,
+    required this.reviews,
+  });
+
+  final bool isLoading;
+  final double rating;
+  final int reviewsCount;
+  final List<Review> reviews;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      onTap: () {
-        // TODO: открыть все отзывы.
-      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Text(
-                '4.9',
+                _ratingText(rating),
                 style: AppTextStyles.displayMedium.copyWith(
                   color: AppColors.foreground,
                   fontWeight: FontWeight.w900,
@@ -206,9 +314,11 @@ final class _ReviewsPreview extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        for (var index = 0; index < 5; index++)
-                          const Icon(
-                            Icons.star,
+                        for (var index = 1; index <= 5; index++)
+                          Icon(
+                            index <= rating.round()
+                                ? Icons.star
+                                : Icons.star_border,
                             size: AppSpacing.space12,
                             color: AppColors.warning,
                           ),
@@ -216,7 +326,7 @@ final class _ReviewsPreview extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.space4),
                     Text(
-                      '154 reviews',
+                      '$reviewsCount reviews',
                       style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.mutedForeground,
                         letterSpacing: 0,
@@ -225,22 +335,26 @@ final class _ReviewsPreview extends StatelessWidget {
                   ],
                 ),
               ),
-              Text(
-                'See all',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: AppSpacing.space16),
-          for (final review in _previewReviews) ...[
-            _ReviewSnippet(review: review),
-            if (review != _previewReviews.last)
-              const SizedBox(height: AppSpacing.space12),
-          ],
+          if (isLoading)
+            const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
+          else if (reviews.isEmpty)
+            Text(
+              'Reviews will appear here after completed orders.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.mutedForeground,
+              ),
+            )
+          else
+            for (final review in reviews.take(3)) ...[
+              _ReviewSnippet(review: review),
+              if (review != reviews.take(3).last)
+                const SizedBox(height: AppSpacing.space12),
+            ],
         ],
       ),
     );
@@ -250,7 +364,7 @@ final class _ReviewsPreview extends StatelessWidget {
 final class _ReviewSnippet extends StatelessWidget {
   const _ReviewSnippet({required this.review});
 
-  final _ReviewPreview review;
+  final Review review;
 
   @override
   Widget build(BuildContext context) {
@@ -267,7 +381,7 @@ final class _ReviewSnippet extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                review.initials,
+                _initials(review.customerName),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
@@ -286,7 +400,7 @@ final class _ReviewSnippet extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      review.name,
+                      review.customerName ?? 'Customer',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.foreground,
                         fontWeight: FontWeight.w600,
@@ -294,23 +408,25 @@ final class _ReviewSnippet extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    review.time,
+                    '${review.rating}/5',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.mutedForeground,
+                      color: AppColors.warning,
                       letterSpacing: 0,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.space4),
-              Text(
-                review.text,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.mutedForeground,
+              if (review.comment case final comment?) ...[
+                const SizedBox(height: AppSpacing.space4),
+                Text(
+                  comment,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.mutedForeground,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -410,25 +526,21 @@ final class _LogOutItem extends StatelessWidget {
   }
 }
 
+final class _ProfileReviewsState {
+  const _ProfileReviewsState({
+    required this.rating,
+    required this.reviews,
+  });
+
+  final Result<MasterRating> rating;
+  final Result<List<Review>> reviews;
+}
+
 final class _ProfileMenuItemData {
   const _ProfileMenuItemData({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
-}
-
-final class _ReviewPreview {
-  const _ReviewPreview({
-    required this.name,
-    required this.initials,
-    required this.text,
-    required this.time,
-  });
-
-  final String name;
-  final String initials;
-  final String text;
-  final String time;
 }
 
 const _profileMenuItems = [
@@ -441,17 +553,17 @@ const _profileMenuItems = [
   _ProfileMenuItemData(icon: Icons.help_outline, label: 'Help'),
 ];
 
-const _previewReviews = [
-  _ReviewPreview(
-    name: 'Aigerim B.',
-    initials: 'AB',
-    text: 'Very professional, arrived on time and fixed the fridge in 30 min.',
-    time: 'Today',
-  ),
-  _ReviewPreview(
-    name: 'Nurlan T.',
-    initials: 'NT',
-    text: 'Explained everything clearly. Fair price. Recommend.',
-    time: 'Yesterday',
-  ),
-];
+String _ratingText(double rating) {
+  return rating == 0 ? '0.0' : rating.toStringAsFixed(1);
+}
+
+String _initials(String? name) {
+  final parts = name?.trim().split(RegExp(r'\s+')) ?? const <String>[];
+  if (parts.isEmpty || parts.first.isEmpty) {
+    return 'CU';
+  }
+  if (parts.length == 1) {
+    return parts.first.substring(0, 1).toUpperCase();
+  }
+  return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+}

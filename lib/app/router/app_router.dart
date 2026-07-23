@@ -24,6 +24,8 @@ import '../../features/customer/presentation/pages/profile_page.dart';
 import '../../features/proposals/domain/repositories/offer_repository.dart';
 import '../../features/proposals/presentation/pages/offers_page.dart';
 import '../../features/proposals/presentation/pages/send_offer_page.dart';
+import '../../features/reviews/domain/repositories/review_repository.dart';
+import '../../features/reviews/presentation/pages/review_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/technician/presentation/pages/calendar_page.dart';
 import '../../features/technician/presentation/pages/dashboard_page.dart';
@@ -45,6 +47,7 @@ final class AppRouter {
     required OrderRepository orderRepository,
     required UserRepository userRepository,
     required OfferRepository offerRepository,
+    required ReviewRepository reviewRepository,
     required TokenStorage tokenStorage,
     required ValueNotifier<int> ordersRefreshNotifier,
   })
@@ -53,6 +56,13 @@ final class AppRouter {
           GoRoute(
             path: AppRoutes.customerOffers,
             builder: (context, state) => OffersPage(orderId: state.pathParameters['id']!, repository: offerRepository),
+          ),
+          GoRoute(
+            path: AppRoutes.customerReview,
+            builder: (context, state) => ReviewPage(
+              orderId: state.pathParameters['id']!,
+              reviewRepository: reviewRepository,
+            ),
           ),
           GoRoute(
             path: AppRoutes.technicianSendOffer,
@@ -195,7 +205,10 @@ final class AppRouter {
                   GoRoute(
                     path: AppRoutes.technicianProfile,
                     builder: (context, state) =>
-                        const technician_profile.ProfilePage(),
+                        technician_profile.ProfilePage(
+                          reviewRepository: reviewRepository,
+                          tokenStorage: tokenStorage,
+                        ),
                   ),
                 ],
               ),
