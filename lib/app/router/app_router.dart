@@ -166,8 +166,10 @@ final class AppRouter {
                 routes: [
                   GoRoute(
                     path: AppRoutes.technicianOrders,
-                    builder: (context, state) =>
-                        const technician_orders.OrdersPage(),
+                    builder: (context, state) => technician_orders.OrdersPage(
+                      orderRepository: orderRepository,
+                      tokenStorage: tokenStorage,
+                    ),
                   ),
                 ],
               ),
