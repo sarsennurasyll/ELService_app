@@ -7,6 +7,7 @@ final class OrderDto {
     required this.status,
     required this.description,
     this.technicianId,
+    this.assignedMasterId,
     this.address,
     this.price,
     this.preferredDate,
@@ -18,6 +19,7 @@ final class OrderDto {
   final String status;
   final String description;
   final String? technicianId;
+  final String? assignedMasterId;
   final String? address;
   final double? price;
   final DateTime? preferredDate;
@@ -44,6 +46,7 @@ final class OrderDto {
       status: status,
       description: description,
       technicianId: map['technicianId'] as String?,
+      assignedMasterId: map['assignedMasterId'] as String?,
       address: map['address'] as String?,
       price: _parsePrice(map['price']),
       preferredDate: _parseDate(map['preferredDate']),

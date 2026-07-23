@@ -55,9 +55,13 @@ final class _OrdersPageState extends State<OrdersPage> {
       future: _ordersFuture,
       builder: (context, snapshot) {
         final result = snapshot.data;
-        final orders = result is Success<List<Order>> ? result.value : const <Order>[];
+        final orders = result is Success<List<Order>>
+            ? result.value
+            : const <Order>[];
         final activeOrders = orders.where(_isActiveOrder).toList();
-        final pastOrders = orders.where((order) => !_isActiveOrder(order)).toList();
+        final pastOrders = orders
+            .where((order) => !_isActiveOrder(order))
+            .toList();
         final selectedOrders = _isActiveTab ? activeOrders : pastOrders;
 
         return Column(
@@ -76,7 +80,9 @@ final class _OrdersPageState extends State<OrdersPage> {
                 _ when result is ErrorResult<List<Order>> => _OrdersError(
                   message: result.failure.message,
                 ),
-                _ when result is Success<List<Order>> && selectedOrders.isEmpty =>
+                _
+                    when result is Success<List<Order>> &&
+                        selectedOrders.isEmpty =>
                   _EmptyOrders(isActiveTab: _isActiveTab),
                 _ when result is Success<List<Order>> => ListView.separated(
                   padding: const EdgeInsets.all(AppSpacing.space20),
@@ -248,7 +254,7 @@ final class _OrderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.space4),
                     Text(
-                      '${order.technicianId ?? 'Awaiting technician'} · ${_orderTime(order)}',
+                      '${order.assignedMasterId ?? order.technicianId ?? 'Awaiting technician'} · ${_orderTime(order)}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.mutedForeground,
                       ),

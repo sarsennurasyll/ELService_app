@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -28,8 +29,8 @@ final class OrderDetailsPage extends StatefulWidget {
 }
 
 final class _OrderDetailsPageState extends State<OrderDetailsPage> {
-  late final Future<Result<Order>> _orderFuture =
-      widget.orderRepository.getOrderById(widget.orderId);
+  late final Future<Result<Order>> _orderFuture = widget.orderRepository
+      .getOrderById(widget.orderId);
 
   @override
   Widget build(BuildContext context) {
@@ -119,11 +120,10 @@ final class _OrderDetailsContent extends StatelessWidget {
                     children: [
                       Expanded(
                         child: PrimaryButton(
-                          label: 'Call',
+                          label: 'Offers',
                           variant: PrimaryButtonVariant.outline,
-                          onPressed: () {
-                            // TODO: позвонить мастеру.
-                          },
+                          onPressed: () =>
+                              context.push(AppRoutes.offers(order.id)),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.space8),
@@ -163,6 +163,7 @@ final class _StatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = switch (status) {
       _OrderStatus.pending => AppColors.warning,
+      _OrderStatus.accepted => AppColors.primary,
       _OrderStatus.completed => AppColors.success,
       _OrderStatus.active => AppColors.primary,
       _OrderStatus.cancelled || _OrderStatus.disputed => AppColors.error,
@@ -172,7 +173,9 @@ final class _StatusBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppColors.primary10.a),
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: color.withValues(alpha: AppColors.primary20.a)),
+        border: Border.all(
+          color: color.withValues(alpha: AppColors.primary20.a),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.space16),
@@ -188,10 +191,11 @@ final class _StatusBanner extends StatelessWidget {
                 child: Icon(
                   switch (status) {
                     _OrderStatus.pending => Icons.directions_car_outlined,
+                    _OrderStatus.accepted => Icons.handshake_outlined,
                     _OrderStatus.completed => Icons.check_circle_outline,
                     _OrderStatus.active => Icons.build_outlined,
-                    _OrderStatus.cancelled || _OrderStatus.disputed =>
-                      Icons.error_outline,
+                    _OrderStatus.cancelled ||
+                    _OrderStatus.disputed => Icons.error_outline,
                   },
                   size: AppSpacing.space16,
                   color: color,
@@ -488,6 +492,7 @@ final class _CostCard extends StatelessWidget {
 
 enum _OrderStatus {
   pending('Pending'),
+  accepted('Accepted'),
   active('Active'),
   completed('Completed'),
   cancelled('Cancelled'),
@@ -500,6 +505,7 @@ enum _OrderStatus {
 
 final class _OrderDetails {
   const _OrderDetails({
+    required this.id,
     required this.idLabel,
     required this.icon,
     required this.title,
@@ -513,6 +519,7 @@ final class _OrderDetails {
     required this.isCompleted,
   });
 
+  final String id;
   final String idLabel;
   final IconData icon;
   final String title;
@@ -527,6 +534,7 @@ final class _OrderDetails {
   factory _OrderDetails.fromOrder(Order order) {
     final preferredDate = order.preferredDate;
     return _OrderDetails(
+      id: order.id,
       idLabel: '#${order.id}',
       icon: Icons.build_outlined,
       title: order.description,
@@ -546,6 +554,7 @@ final class _OrderDetails {
 
 _OrderStatus _orderStatusFromValue(String value) {
   return switch (value) {
+    'ACCEPTED' => _OrderStatus.accepted,
     'ACTIVE' => _OrderStatus.active,
     'COMPLETED' => _OrderStatus.completed,
     'CANCELLED' => _OrderStatus.cancelled,

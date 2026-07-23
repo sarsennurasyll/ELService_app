@@ -7,6 +7,7 @@ final class Order {
     required this.status,
     required this.description,
     this.technicianId,
+    this.assignedMasterId,
     this.address,
     this.price,
     this.preferredDate,
@@ -18,6 +19,7 @@ final class Order {
   final String status;
   final String description;
   final String? technicianId;
+  final String? assignedMasterId;
   final String? address;
   final double? price;
   final DateTime? preferredDate;
