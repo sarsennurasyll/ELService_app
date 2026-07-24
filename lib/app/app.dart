@@ -7,12 +7,15 @@ import '../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
 import '../features/auth/domain/repositories/auth_repository.dart';
 import '../features/customer/data/datasources/category_remote_datasource.dart';
+import '../features/customer/data/datasources/chat_remote_datasource.dart';
 import '../features/customer/data/datasources/order_remote_datasource.dart';
 import '../features/customer/data/datasources/user_remote_datasource.dart';
 import '../features/customer/data/repositories/category_repository_impl.dart';
+import '../features/customer/data/repositories/chat_repository_impl.dart';
 import '../features/customer/data/repositories/order_repository_impl.dart';
 import '../features/customer/data/repositories/user_repository_impl.dart';
 import '../features/customer/domain/repositories/category_repository.dart';
+import '../features/customer/domain/repositories/chat_repository.dart';
 import '../features/customer/domain/repositories/order_repository.dart';
 import '../features/customer/domain/repositories/user_repository.dart';
 import '../features/proposals/data/datasources/offer_remote_datasource.dart';
@@ -46,6 +49,9 @@ final class _AppState extends State<App> {
   late final CategoryRepository _categoryRepository = CategoryRepositoryImpl(
     remoteDataSource: CategoryRemoteDataSourceImpl(apiClient: _apiClient),
   );
+  late final ChatRepository _chatRepository = ChatRepositoryImpl(
+    remoteDataSource: ChatRemoteDataSourceImpl(apiClient: _apiClient),
+  );
   late final OrderRepository _orderRepository = OrderRepositoryImpl(
     remoteDataSource: OrderRemoteDataSourceImpl(apiClient: _apiClient),
   );
@@ -62,6 +68,7 @@ final class _AppState extends State<App> {
   late final AppRouter _appRouter = AppRouter(
     authRepository: _authRepository,
     categoryRepository: _categoryRepository,
+    chatRepository: _chatRepository,
     orderRepository: _orderRepository,
     userRepository: _userRepository,
     offerRepository: _offerRepository,

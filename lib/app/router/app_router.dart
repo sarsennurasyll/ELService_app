@@ -13,8 +13,10 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/customer/domain/repositories/category_repository.dart';
+import '../../features/customer/domain/repositories/chat_repository.dart';
 import '../../features/customer/domain/repositories/order_repository.dart';
 import '../../features/customer/domain/repositories/user_repository.dart';
+import '../../features/customer/presentation/pages/chat_messages_page.dart';
 import '../../features/customer/presentation/pages/chat_page.dart';
 import '../../features/customer/presentation/pages/create_order_page.dart';
 import '../../features/customer/presentation/pages/home_page.dart';
@@ -44,6 +46,7 @@ final class AppRouter {
   AppRouter({
     required AuthRepository authRepository,
     required CategoryRepository categoryRepository,
+    required ChatRepository chatRepository,
     required OrderRepository orderRepository,
     required UserRepository userRepository,
     required OfferRepository offerRepository,
@@ -53,6 +56,13 @@ final class AppRouter {
   })
     : router = GoRouter(
         routes: [
+          GoRoute(
+            path: AppRoutes.customerChatMessages,
+            builder: (context, state) => ChatMessagesPage(
+              chatId: state.pathParameters['id']!,
+              repository: chatRepository,
+            ),
+          ),
           GoRoute(
             path: AppRoutes.customerOffers,
             builder: (context, state) => OffersPage(orderId: state.pathParameters['id']!, repository: offerRepository),
@@ -100,6 +110,7 @@ final class AppRouter {
               return OrderDetailsPage(
                 orderId: orderId,
                 orderRepository: orderRepository,
+                chatRepository: chatRepository,
                 tokenStorage: tokenStorage,
               );
             },
@@ -139,7 +150,9 @@ final class AppRouter {
                 routes: [
                   GoRoute(
                     path: AppRoutes.customerMessages,
-                    builder: (context, state) => const ChatPage(),
+                    builder: (context, state) => ChatPage(
+                      repository: chatRepository,
+                    ),
                   ),
                 ],
               ),

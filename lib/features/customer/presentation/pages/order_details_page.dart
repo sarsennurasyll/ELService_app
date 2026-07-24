@@ -15,18 +15,21 @@ import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/layout/app_top_bar.dart';
 import '../../../../shared/widgets/layout/screen.dart';
 import '../../domain/models/order.dart';
+import '../../domain/repositories/chat_repository.dart';
 import '../../domain/repositories/order_repository.dart';
 
 final class OrderDetailsPage extends StatefulWidget {
   const OrderDetailsPage({
     required this.orderId,
     required this.orderRepository,
+    required this.chatRepository,
     required this.tokenStorage,
     super.key,
   });
 
   final String orderId;
   final OrderRepository orderRepository;
+  final ChatRepository chatRepository;
   final TokenStorage tokenStorage;
 
   @override
@@ -103,6 +106,23 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
     }
   }
 
+  Future<void> _openChat(String orderId) async {
+    final result = await widget.chatRepository.createChat(orderId);
+
+    if (!mounted) {
+      return;
+    }
+
+    switch (result) {
+      case Success():
+        await context.push(AppRoutes.chatMessages(result.value.id));
+      case ErrorResult():
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.failure.message)),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Screen(
@@ -154,6 +174,7 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 'cancel',
                 widget.orderRepository.cancelOrder,
               ),
+              onOpenChat: () => _openChat(result.value.id),
             );
           }
 
@@ -172,6 +193,7 @@ final class _OrderDetailsContent extends StatelessWidget {
     required this.onStart,
     required this.onComplete,
     required this.onCancel,
+    required this.onOpenChat,
   });
 
   final _OrderDetails order;
@@ -180,6 +202,7 @@ final class _OrderDetailsContent extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onComplete;
   final VoidCallback onCancel;
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -214,6 +237,7 @@ final class _OrderDetailsContent extends StatelessWidget {
               onStart: onStart,
               onComplete: onComplete,
               onCancel: onCancel,
+              onOpenChat: onOpenChat,
             ),
           ),
         ),
@@ -230,6 +254,7 @@ final class _OrderActions extends StatelessWidget {
     required this.onStart,
     required this.onComplete,
     required this.onCancel,
+    required this.onOpenChat,
   });
 
   final _OrderDetails order;
@@ -238,6 +263,7 @@ final class _OrderActions extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onComplete;
   final VoidCallback onCancel;
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -263,9 +289,7 @@ final class _OrderActions extends StatelessWidget {
         child: PrimaryButton(
           label: 'Chat',
           variant: PrimaryButtonVariant.outline,
-          onPressed: _canReview(order, session)
-            ? () => context.push(AppRoutes.review(order.id))
-            : null,
+          onPressed: _canOpenChat(order, session) ? onOpenChat : null,
         ),
       ),
     ];
@@ -774,6 +798,17 @@ bool _canCancel(_OrderDetails order, _CurrentSession? session) {
       order.customerId == session?.id &&
       const {'PENDING', 'ACCEPTED', 'IN_PROGRESS'}.contains(order.statusValue);
 }
+
+bool _canOpenChat(_OrderDetails order, _CurrentSession? session) {
+  final assignedMasterId = order.assignedMasterId;
+  if (assignedMasterId == null) {
+    return false;
+  }
+
+  return session?.role == 'CUSTOMER' && order.customerId == session?.id ||
+      session?.role == 'TECHNICIAN' && assignedMasterId == session?.id;
+}
+
 bool _canReview(_OrderDetails order, _CurrentSession? session) {
   return session?.role == 'CUSTOMER' &&
       order.customerId == session?.id &&

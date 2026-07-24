@@ -138,8 +138,20 @@ final class _ChatMessagesPageState extends State<ChatMessagesPage> {
       return;
     }
 
-    await widget.repository.sendMessage(widget.chatId, text.trim());
-    _messageController.clear();
-    _reload();
+    final result = await widget.repository.sendMessage(widget.chatId, text.trim());
+
+    if (!mounted) {
+      return;
+    }
+
+    switch (result) {
+      case Success<Message>():
+        _messageController.clear();
+        _reload();
+      case ErrorResult<Message>():
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.failure.message)),
+        );
+    }
   }
 }

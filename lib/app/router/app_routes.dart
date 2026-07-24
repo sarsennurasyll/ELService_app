@@ -5,6 +5,7 @@ abstract final class AppRoutes {
   static const customerHome = '/home';
   static const customerOrders = '/orders';
   static const customerMessages = '/chat';
+  static const customerChatMessages = '/chat/:id';
   static const customerProfile = '/profile';
   static const customerCreateOrder = '/order/new';
   static const customerOrderDetails = '/order/details/:id';
@@ -13,6 +14,7 @@ abstract final class AppRoutes {
   static const technicianSendOffer = '/tech/order/:id/offer';
 
   static String orderDetails(String id) => '/order/details/$id';
+  static String chatMessages(String id) => '/chat/$id';
   static String offers(String id) => '/order/$id/offers';
   static String review(String id) => '/order/$id/review';
   static String sendOffer(String id) => '/tech/order/$id/offer';

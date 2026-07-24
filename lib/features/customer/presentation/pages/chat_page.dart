@@ -1,12 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/utils/result.dart';
+import '../../domain/models/chat.dart';
+import '../../domain/repositories/chat_repository.dart';
 
-final class ChatPage extends StatelessWidget {
-  const ChatPage({super.key});
+final class ChatPage extends StatefulWidget {
+  const ChatPage({required this.repository, super.key});
+
+  final ChatRepository repository;
+
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+final class _ChatPageState extends State<ChatPage> {
+  late Future<Result<List<Chat>>> _chatsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatsFuture = widget.repository.getChats();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +34,49 @@ final class ChatPage extends StatelessWidget {
       children: [
         const _ChatHeader(),
         Expanded(
-          child: ListView.separated(
-            itemCount: _chats.length,
-            separatorBuilder: (context, index) => const Divider(height: 0),
-            itemBuilder: (context, index) => _ChatTile(chat: _chats[index]),
+          child: FutureBuilder<Result<List<Chat>>>(
+            future: _chatsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
+              }
+
+              final result = snapshot.data;
+              if (result is ErrorResult<List<Chat>>) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.space32),
+                    child: Text(
+                      result.failure.message,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              if (result is Success<List<Chat>>) {
+                if (result.value.isEmpty) {
+                  return const Center(child: Text('No chats yet'));
+                }
+
+                return ListView.separated(
+                  itemCount: result.value.length,
+                  separatorBuilder: (context, index) => const Divider(
+                    height: 0,
+                  ),
+                  itemBuilder: (context, index) => _ChatTile(
+                    chat: result.value[index],
+                  ),
+                );
+              }
+
+              return const Center(child: Text('Unable to load chats'));
+            },
           ),
         ),
       ],
@@ -91,14 +150,12 @@ final class _ChatHeader extends StatelessWidget {
 final class _ChatTile extends StatelessWidget {
   const _ChatTile({required this.chat});
 
-  final _Chat chat;
+  final Chat chat;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // TODO: открыть диалог.
-      },
+      onTap: () => context.push(AppRoutes.chatMessages(chat.id)),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.space20,
@@ -120,7 +177,7 @@ final class _ChatTile extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    chat.initials,
+                    'ES',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.surface,
                       fontWeight: FontWeight.w700,
@@ -138,7 +195,7 @@ final class _ChatTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          chat.name,
+                          'Order ${chat.orderId}',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.foreground,
                             fontWeight: FontWeight.w600,
@@ -146,55 +203,15 @@ final class _ChatTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.space8),
-                      Text(
-                        chat.time,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.mutedForeground,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 0,
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.space4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          chat.lastMessage,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.mutedForeground,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (chat.unreadCount > 0) ...[
-                        const SizedBox(width: AppSpacing.space8),
-                        SizedBox(
-                          width: AppSpacing.space20,
-                          height: AppSpacing.space20,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.full,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${chat.unreadCount}',
-                                style: AppTextStyles.labelSmall.copyWith(
-                                  color: AppColors.surface,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                  Text(
+                    chat.lastMessage ?? 'No messages yet',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.mutedForeground,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -205,43 +222,3 @@ final class _ChatTile extends StatelessWidget {
     );
   }
 }
-
-final class _Chat {
-  const _Chat({
-    required this.name,
-    required this.initials,
-    required this.lastMessage,
-    required this.time,
-    required this.unreadCount,
-  });
-
-  final String name;
-  final String initials;
-  final String lastMessage;
-  final String time;
-  final int unreadCount;
-}
-
-const _chats = [
-  _Chat(
-    name: 'Dmitry Volkov',
-    initials: 'DV',
-    lastMessage: "I'll bring the seal kit.",
-    time: '10:08',
-    unreadCount: 2,
-  ),
-  _Chat(
-    name: 'ELService Support',
-    initials: 'ES',
-    lastMessage: 'Your payment receipt has been sent.',
-    time: 'Yesterday',
-    unreadCount: 0,
-  ),
-  _Chat(
-    name: 'Arman Serikov',
-    initials: 'AS',
-    lastMessage: 'Thanks for the review!',
-    time: 'Mon',
-    unreadCount: 0,
-  ),
-];
