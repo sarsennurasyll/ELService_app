@@ -1,13 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
 
 final class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({
+    required this.authRepository,
+    super.key,
+  });
+
+  final AuthRepository authRepository;
+
+  Future<void> _logout(BuildContext context) async {
+    final result = await authRepository.logout();
+    if (!context.mounted) {
+      return;
+    }
+
+    if (result is ErrorResult<void>) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.failure.message)),
+      );
+    }
+    context.go(AppRoutes.login);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +72,7 @@ final class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.space8),
-          const _LogOutItem(),
+          _LogOutItem(onTap: () => _logout(context)),
         ],
       ),
     );
@@ -125,14 +148,14 @@ final class _SettingsRow extends StatelessWidget {
 }
 
 final class _LogOutItem extends StatelessWidget {
-  const _LogOutItem();
+  const _LogOutItem({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      onTap: () {
-        // TODO: подключить выход из аккаунта.
-      },
+      onTap: onTap,
       child: Row(
         children: [
           SizedBox(

@@ -276,7 +276,9 @@ final class AppRouter {
                 routes: [
                   GoRoute(
                     path: AppRoutes.adminSettings,
-                    builder: (context, state) => const SettingsPage(),
+                    builder: (context, state) => SettingsPage(
+                      authRepository: authRepository,
+                    ),
                   ),
                 ],
               ),
