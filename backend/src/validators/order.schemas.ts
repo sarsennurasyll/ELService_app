@@ -11,7 +11,7 @@ const orderStatusSchema = z.enum([
 ]);
 
 export const CreateOrderSchema = z.object({
-  customerId: z.string().trim().min(1, 'customerId is required'),
+  customerId: z.string().trim().min(1, 'customerId is required').optional(),
   categoryId: z.string().trim().min(1, 'categoryId is required'),
   description: z.string().trim().min(1, 'description is required'),
   address: z.string().trim().min(1, 'address is required').optional(),

@@ -33,6 +33,25 @@ export class OrderRepository {
     });
   }
 
+  findAllForCustomer(customerId: string) {
+    return prisma.order.findMany({
+      where: { customerId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  findAllForTechnician(technicianId: string) {
+    return prisma.order.findMany({
+      where: {
+        OR: [
+          { status: 'PENDING', assignedMasterId: null },
+          { assignedMasterId: technicianId },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   findById(id: string) {
     return prisma.order.findUnique({ where: { id } });
   }

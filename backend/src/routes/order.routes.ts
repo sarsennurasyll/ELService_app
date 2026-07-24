@@ -1,10 +1,13 @@
 import { Router } from 'express';
 
 import { orderController } from '../controllers/order.controller';
+import { authMiddleware } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import { CreateOrderSchema, UpdateOrderSchema } from '../validators/order.schemas';
 
 export const orderRouter = Router();
+
+orderRouter.use(authMiddleware);
 
 orderRouter.post('/', validate(CreateOrderSchema), orderController.create);
 orderRouter.get('/', orderController.list);
