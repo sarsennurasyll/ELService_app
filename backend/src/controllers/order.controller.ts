@@ -12,7 +12,10 @@ import type {
 } from '../validators/order.schemas';
 
 const orderService = new OrderService();
-type AuthenticatedRequest = Request & { user?: JwtPayload };
+type AuthenticatedRequest = Request & {
+  user?: JwtPayload;
+  validated?: { query?: unknown };
+};
 
 export const orderController = {
   create: asyncHandler(async (req: Request, res: Response) => {
@@ -26,7 +29,7 @@ export const orderController = {
   list: asyncHandler(async (req: Request, res: Response) => {
     const data = await orderService.listOrders(
       getUser(req),
-      req.query as OrderListQuery,
+      getValidatedQuery(req),
     );
     sendSuccess(res, data);
   }),
@@ -84,4 +87,9 @@ const getUser = (req: Request): JwtPayload => {
     throw new AppError(401, 'Unauthorized', 'UNAUTHORIZED');
   }
   return user;
+};
+
+const getValidatedQuery = (req: Request): OrderListQuery => {
+  const query = (req as AuthenticatedRequest).validated?.query;
+  return (query ?? req.query) as OrderListQuery;
 };

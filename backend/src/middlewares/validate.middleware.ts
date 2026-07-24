@@ -4,6 +4,9 @@ import type { ZodType } from 'zod';
 import { AppError } from '../utils/app-error';
 
 type RequestPart = 'body' | 'query' | 'params';
+type RequestWithValidatedData = Request & {
+  validated?: Partial<Record<RequestPart, unknown>>;
+};
 
 export const validate =
   (schema: ZodType, part: RequestPart = 'body') =>
@@ -14,6 +17,16 @@ export const validate =
       next(
         new AppError(400, 'Validation failed', 'VALIDATION_ERROR', result.error.flatten()),
       );
+      return;
+    }
+
+    if (part === 'query') {
+      const request = req as RequestWithValidatedData;
+      request.validated = {
+        ...request.validated,
+        query: result.data,
+      };
+      next();
       return;
     }
 
