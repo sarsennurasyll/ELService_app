@@ -73,7 +73,8 @@ final class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<void>> logout() async {
     try {
-      await _remoteDataSource.logout();
+      final refreshToken = await _tokenStorage.getRefreshToken();
+      await _remoteDataSource.logout(refreshToken: refreshToken);
       await _tokenStorage.clear();
       return const Success(null);
     } on Exception catch (error) {

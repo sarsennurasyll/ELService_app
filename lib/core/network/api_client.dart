@@ -33,7 +33,10 @@ final class ApiClient {
              ),
            ) {
     _dio.interceptors.addAll([
-      AuthInterceptor(tokenStorage: tokenStorage),
+      AuthInterceptor(
+        tokenStorage: tokenStorage,
+        refreshDio: Dio(_dio.options),
+      ),
       LoggingInterceptor(logger: logger),
     ]);
   }

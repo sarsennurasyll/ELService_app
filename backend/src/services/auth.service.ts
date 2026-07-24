@@ -76,7 +76,11 @@ export class AuthService {
         role: user.role,
       });
 
-      return { accessToken };
+      return {
+        accessToken,
+        refreshToken: input.refreshToken,
+        user: this.userRepository.toPublicUser(user),
+      };
     } catch (error) {
       if (error instanceof AppError) {
         throw error;
