@@ -179,7 +179,6 @@ final class AppRouter {
                     path: AppRoutes.technicianOrders,
                     builder: (context, state) => technician_orders.OrdersPage(
                       orderRepository: orderRepository,
-                      tokenStorage: tokenStorage,
                     ),
                   ),
                 ],

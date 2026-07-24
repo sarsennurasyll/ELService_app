@@ -27,13 +27,13 @@ final class OrdersPage extends StatefulWidget {
 }
 
 final class _OrdersPageState extends State<OrdersPage> {
-  late Future<Result<List<Order>>> _ordersFuture;
+  late Future<_CustomerOrdersState> _ordersFuture;
   var _isActiveTab = true;
 
   @override
   void initState() {
     super.initState();
-    _ordersFuture = widget.orderRepository.getOrders();
+    _ordersFuture = _loadOrders();
     widget.ordersRefreshNotifier.addListener(_reloadOrders);
   }
 
@@ -45,30 +45,35 @@ final class _OrdersPageState extends State<OrdersPage> {
 
   void _reloadOrders() {
     setState(() {
-      _ordersFuture = widget.orderRepository.getOrders();
+      _ordersFuture = _loadOrders();
     });
+  }
+
+  Future<_CustomerOrdersState> _loadOrders() async {
+    final activeOrders = await widget.orderRepository.getOrders(
+      scope: 'active',
+    );
+    final pastOrders = await widget.orderRepository.getOrders(scope: 'past');
+    return _CustomerOrdersState(active: activeOrders, past: pastOrders);
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Result<List<Order>>>(
+    return FutureBuilder<_CustomerOrdersState>(
       future: _ordersFuture,
       builder: (context, snapshot) {
-        final result = snapshot.data;
-        final orders = result is Success<List<Order>>
-            ? result.value
+        final state = snapshot.data;
+        final selectedResult = _isActiveTab ? state?.active : state?.past;
+        final activeCount = state?.activeOrders.length ?? 0;
+        final selectedOrders = selectedResult is Success<List<Order>>
+            ? selectedResult.value
             : const <Order>[];
-        final activeOrders = orders.where(_isActiveOrder).toList();
-        final pastOrders = orders
-            .where((order) => !_isActiveOrder(order))
-            .toList();
-        final selectedOrders = _isActiveTab ? activeOrders : pastOrders;
 
         return Column(
           children: [
             _OrdersHeader(
               isActiveTab: _isActiveTab,
-              activeCount: activeOrders.length,
+              activeCount: activeCount,
               onActiveSelected: () => setState(() => _isActiveTab = true),
               onPastSelected: () => setState(() => _isActiveTab = false),
             ),
@@ -77,14 +82,16 @@ final class _OrdersPageState extends State<OrdersPage> {
                 ConnectionState.waiting => const Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
                 ),
-                _ when result is ErrorResult<List<Order>> => _OrdersError(
-                  message: result.failure.message,
+                _ when selectedResult is ErrorResult<List<Order>> =>
+                  _OrdersError(
+                  message: selectedResult.failure.message,
                 ),
                 _
-                    when result is Success<List<Order>> &&
+                    when selectedResult is Success<List<Order>> &&
                         selectedOrders.isEmpty =>
                   _EmptyOrders(isActiveTab: _isActiveTab),
-                _ when result is Success<List<Order>> => ListView.separated(
+                _ when selectedResult is Success<List<Order>> =>
+                  ListView.separated(
                   padding: const EdgeInsets.all(AppSpacing.space20),
                   itemCount: selectedOrders.length,
                   separatorBuilder: (context, index) =>
@@ -99,6 +106,18 @@ final class _OrdersPageState extends State<OrdersPage> {
         );
       },
     );
+  }
+}
+
+final class _CustomerOrdersState {
+  const _CustomerOrdersState({required this.active, required this.past});
+
+  final Result<List<Order>> active;
+  final Result<List<Order>> past;
+
+  List<Order> get activeOrders {
+    final result = active;
+    return result is Success<List<Order>> ? result.value : const <Order>[];
   }
 }
 
@@ -407,10 +426,6 @@ final class _EmptyOrders extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _isActiveOrder(Order order) {
-  return order.status != 'COMPLETED' && order.status != 'CANCELLED';
 }
 
 Color _statusColor(String status) {

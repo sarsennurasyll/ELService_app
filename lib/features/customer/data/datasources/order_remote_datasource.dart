@@ -4,7 +4,7 @@ import '../../../../core/network/api_endpoints.dart';
 import '../models/order_dto.dart';
 
 abstract interface class OrderRemoteDataSource {
-  Future<List<OrderDto>> getOrders();
+  Future<List<OrderDto>> getOrders({String? scope});
 
   Future<OrderDto> getOrderById(String id);
 
@@ -24,8 +24,11 @@ final class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   final ApiClient _apiClient;
 
   @override
-  Future<List<OrderDto>> getOrders() async {
-    final response = await _apiClient.get(ApiEndpoints.orders);
+  Future<List<OrderDto>> getOrders({String? scope}) async {
+    final response = await _apiClient.get(
+      ApiEndpoints.orders,
+      queryParameters: scope == null ? null : {'scope': scope},
+    );
     final data = response['data'];
 
     if (data is! List) {

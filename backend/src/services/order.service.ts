@@ -2,12 +2,15 @@ import { CategoryRepository } from '../repositories/category.repository';
 import type { OrderStatus } from '@prisma/client';
 import {
   OrderRepository,
+  type CustomerOrderScope,
   type CreateOrderInput,
+  type TechnicianOrderScope,
   type UpdateOrderInput,
 } from '../repositories/order.repository';
 import type { JwtPayload } from '../types/auth.types';
 import { UserRepository } from '../repositories/user.repository';
 import { AppError } from '../utils/app-error';
+import type { OrderListQuery } from '../validators/order.schemas';
 
 export class OrderService {
   constructor(
@@ -47,14 +50,20 @@ export class OrderService {
     });
   }
 
-  listOrders(user: JwtPayload) {
+  listOrders(user: JwtPayload, query: OrderListQuery) {
     if (user.role === 'ADMIN') {
       return this.orderRepository.findAll();
     }
     if (user.role === 'TECHNICIAN') {
-      return this.orderRepository.findAllForTechnician(user.sub);
+      return this.orderRepository.findAllForTechnician(
+        user.sub,
+        this.technicianScope(query.scope),
+      );
     }
-    return this.orderRepository.findAllForCustomer(user.sub);
+    return this.orderRepository.findAllForCustomer(
+      user.sub,
+      this.customerScope(query.scope),
+    );
   }
 
   async getOrderById(user: JwtPayload, id: string) {
@@ -183,6 +192,18 @@ export class OrderService {
         ((order.status === 'PENDING' && !order.assignedMasterId) ||
           order.assignedMasterId === technicianId),
     );
+  }
+
+  private customerScope(scope: OrderListQuery['scope']): CustomerOrderScope | undefined {
+    return scope === 'active' || scope === 'past' ? scope : undefined;
+  }
+
+  private technicianScope(
+    scope: OrderListQuery['scope'],
+  ): TechnicianOrderScope | undefined {
+    return scope === 'incoming' || scope === 'accepted' || scope === 'completed'
+      ? scope
+      : undefined;
   }
 
   private assertStatusTransition(from: OrderStatus, to: OrderStatus) {

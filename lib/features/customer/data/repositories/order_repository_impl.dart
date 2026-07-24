@@ -17,9 +17,9 @@ final class OrderRepositoryImpl implements OrderRepository {
   final OrderMapper orderMapper;
 
   @override
-  Future<Result<List<Order>>> getOrders() async {
+  Future<Result<List<Order>>> getOrders({String? scope}) async {
     try {
-      final orders = await _remoteDataSource.getOrders();
+      final orders = await _remoteDataSource.getOrders(scope: scope);
       return Success(orders.map(orderMapper.fromDto).toList());
     } on Exception catch (error) {
       return ErrorResult(_mapFailure(error));

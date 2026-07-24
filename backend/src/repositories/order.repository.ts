@@ -17,6 +17,9 @@ export type UpdateOrderInput = {
   status?: OrderStatus;
 };
 
+export type CustomerOrderScope = 'active' | 'past';
+export type TechnicianOrderScope = 'incoming' | 'accepted' | 'completed';
+
 export class OrderRepository {
   create(data: CreateOrderInput) {
     return prisma.order.create({
@@ -33,21 +36,24 @@ export class OrderRepository {
     });
   }
 
-  findAllForCustomer(customerId: string) {
+  findAllForCustomer(customerId: string, scope?: CustomerOrderScope) {
+    const terminalStatuses: OrderStatus[] = ['COMPLETED', 'CANCELLED'];
     return prisma.order.findMany({
-      where: { customerId },
+      where: {
+        customerId,
+        ...(scope === 'active' ? { status: { notIn: terminalStatuses } } : {}),
+        ...(scope === 'past' ? { status: { in: terminalStatuses } } : {}),
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  findAllForTechnician(technicianId: string) {
+  findAllForTechnician(
+    technicianId: string,
+    scope?: TechnicianOrderScope,
+  ) {
     return prisma.order.findMany({
-      where: {
-        OR: [
-          { status: 'PENDING', assignedMasterId: null },
-          { assignedMasterId: technicianId },
-        ],
-      },
+      where: this.technicianWhere(technicianId, scope),
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -72,5 +78,30 @@ export class OrderRepository {
 
   delete(id: string) {
     return prisma.order.delete({ where: { id } });
+  }
+
+  private technicianWhere(
+    technicianId: string,
+    scope?: TechnicianOrderScope,
+  ) {
+    if (scope === 'incoming') {
+      return { status: 'PENDING' as const, assignedMasterId: null };
+    }
+    if (scope === 'accepted') {
+      return {
+        assignedMasterId: technicianId,
+        status: { notIn: ['COMPLETED', 'CANCELLED'] as OrderStatus[] },
+      };
+    }
+    if (scope === 'completed') {
+      return { assignedMasterId: technicianId, status: 'COMPLETED' as const };
+    }
+
+    return {
+      OR: [
+        { status: 'PENDING' as const, assignedMasterId: null },
+        { assignedMasterId: technicianId },
+      ],
+    };
   }
 }

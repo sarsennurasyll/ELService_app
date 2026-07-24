@@ -7,6 +7,7 @@ import { sendSuccess } from '../utils/api-response';
 import { asyncHandler } from '../utils/async-handler';
 import type {
   CreateOrderInput,
+  OrderListQuery,
   UpdateOrderInput,
 } from '../validators/order.schemas';
 
@@ -23,7 +24,10 @@ export const orderController = {
   }),
 
   list: asyncHandler(async (req: Request, res: Response) => {
-    const data = await orderService.listOrders(getUser(req));
+    const data = await orderService.listOrders(
+      getUser(req),
+      req.query as OrderListQuery,
+    );
     sendSuccess(res, data);
   }),
 

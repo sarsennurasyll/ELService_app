@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,7 +7,6 @@ import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_shadows.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
-import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../features/customer/domain/models/order.dart';
 import '../../../../features/customer/domain/repositories/order_repository.dart';
@@ -21,12 +18,10 @@ enum _OrdersTab { incoming, accepted, completed }
 final class OrdersPage extends StatefulWidget {
   const OrdersPage({
     required this.orderRepository,
-    required this.tokenStorage,
     super.key,
   });
 
   final OrderRepository orderRepository;
-  final TokenStorage tokenStorage;
 
   @override
   State<OrdersPage> createState() => _OrdersPageState();
@@ -43,25 +38,21 @@ final class _OrdersPageState extends State<OrdersPage> {
   }
 
   Future<_TechnicianOrdersState> _loadOrders() async {
-    final technicianId = await _currentTechnicianId();
-    final result = await widget.orderRepository.getOrders();
-    return _TechnicianOrdersState(result: result, technicianId: technicianId);
-  }
+    final incoming = await widget.orderRepository.getOrders(
+      scope: 'incoming',
+    );
+    final accepted = await widget.orderRepository.getOrders(
+      scope: 'accepted',
+    );
+    final completed = await widget.orderRepository.getOrders(
+      scope: 'completed',
+    );
 
-  Future<String?> _currentTechnicianId() async {
-    final session = await widget.tokenStorage.getSession();
-    if (session == null) {
-      return null;
-    }
-
-    try {
-      final json = jsonDecode(session);
-      final user = json is Map ? json['user'] : null;
-      final id = user is Map ? user['id'] : null;
-      return id is String && id.isNotEmpty ? id : null;
-    } on FormatException {
-      return null;
-    }
+    return _TechnicianOrdersState(
+      incoming: incoming,
+      accepted: accepted,
+      completed: completed,
+    );
   }
 
   void _reloadOrders() {
@@ -76,19 +67,16 @@ final class _OrdersPageState extends State<OrdersPage> {
       future: _ordersFuture,
       builder: (context, snapshot) {
         final state = snapshot.data;
-        final orders = state?.orders ?? const <Order>[];
-        final technicianId = state?.technicianId;
-        final incomingOrders = orders.where(_isIncomingOrder).toList();
-        final acceptedOrders = orders
-            .where((order) => _isTechnicianAcceptedOrder(order, technicianId))
-            .toList();
-        final completedOrders = orders
-            .where((order) => _isTechnicianCompletedOrder(order, technicianId))
-            .toList();
+        final incomingOrders = state?.incomingOrders ?? const <Order>[];
+        final selectedResult = switch (_selectedTab) {
+          _OrdersTab.incoming => state?.incoming,
+          _OrdersTab.accepted => state?.accepted,
+          _OrdersTab.completed => state?.completed,
+        };
         final selectedOrders = switch (_selectedTab) {
           _OrdersTab.incoming => incomingOrders,
-          _OrdersTab.accepted => acceptedOrders,
-          _OrdersTab.completed => completedOrders,
+          _OrdersTab.accepted => state?.acceptedOrders ?? const <Order>[],
+          _OrdersTab.completed => state?.completedOrders ?? const <Order>[],
         };
 
         return Column(
@@ -103,11 +91,9 @@ final class _OrdersPageState extends State<OrdersPage> {
                 ConnectionState.waiting => const Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
                 ),
-                _ when state?.result is ErrorResult<List<Order>> =>
+                _ when selectedResult is ErrorResult<List<Order>> =>
                   _OrdersError(
-                    message: (state!.result as ErrorResult<List<Order>>)
-                        .failure
-                        .message,
+                    message: selectedResult.failure.message,
                     onRetry: _reloadOrders,
                   ),
                 _ when selectedOrders.isEmpty => const _EmptyOrders(),
@@ -118,8 +104,10 @@ final class _OrdersPageState extends State<OrdersPage> {
                     itemCount: selectedOrders.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: AppSpacing.space12),
-                    itemBuilder: (context, index) =>
-                        _OrderCard(order: selectedOrders[index]),
+                    itemBuilder: (context, index) => _OrderCard(
+                      order: selectedOrders[index],
+                      canSendOffer: _selectedTab == _OrdersTab.incoming,
+                    ),
                   ),
                 ),
               },
@@ -243,9 +231,10 @@ final class _OrdersTabButton extends StatelessWidget {
 }
 
 final class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, required this.canSendOffer});
 
   final Order order;
+  final bool canSendOffer;
 
   @override
   Widget build(BuildContext context) {
@@ -312,7 +301,7 @@ final class _OrderCard extends StatelessWidget {
             children: [
               _OrderStatusChip(status: order.status),
               const Spacer(),
-              if (_isIncomingOrder(order))
+              if (canSendOffer)
                 SizedBox(
                   width: AppSpacing.space96,
                   child: PrimaryButton(
@@ -439,37 +428,24 @@ final class _EmptyOrders extends StatelessWidget {
 
 final class _TechnicianOrdersState {
   const _TechnicianOrdersState({
-    required this.result,
-    required this.technicianId,
+    required this.incoming,
+    required this.accepted,
+    required this.completed,
   });
 
-  final Result<List<Order>> result;
-  final String? technicianId;
+  final Result<List<Order>> incoming;
+  final Result<List<Order>> accepted;
+  final Result<List<Order>> completed;
 
-  List<Order> get orders {
-    final result = this.result;
+  List<Order> get incomingOrders => _orders(incoming);
+
+  List<Order> get acceptedOrders => _orders(accepted);
+
+  List<Order> get completedOrders => _orders(completed);
+
+  List<Order> _orders(Result<List<Order>> result) {
     return result is Success<List<Order>> ? result.value : const <Order>[];
   }
-}
-
-bool _isIncomingOrder(Order order) {
-  return order.status == 'PENDING' && order.assignedMasterId == null;
-}
-
-bool _isTechnicianAcceptedOrder(Order order, String? technicianId) {
-  if (technicianId == null) {
-    return false;
-  }
-  return order.assignedMasterId == technicianId &&
-      order.status != 'COMPLETED' &&
-      order.status != 'CANCELLED';
-}
-
-bool _isTechnicianCompletedOrder(Order order, String? technicianId) {
-  if (technicianId == null) {
-    return false;
-  }
-  return order.assignedMasterId == technicianId && order.status == 'COMPLETED';
 }
 
 Color _statusColor(String status) {

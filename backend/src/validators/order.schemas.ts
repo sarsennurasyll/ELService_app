@@ -18,6 +18,12 @@ export const CreateOrderSchema = z.object({
   preferredDate: z.coerce.date().optional(),
 });
 
+export const OrderListQuerySchema = z.object({
+  scope: z
+    .enum(['active', 'past', 'incoming', 'accepted', 'completed'])
+    .optional(),
+});
+
 export const UpdateOrderSchema = z
   .object({
     description: z.string().trim().min(1, 'description is required').optional(),
@@ -31,3 +37,4 @@ export const UpdateOrderSchema = z
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
 export type UpdateOrderInput = z.infer<typeof UpdateOrderSchema>;
+export type OrderListQuery = z.infer<typeof OrderListQuerySchema>;
