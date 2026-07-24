@@ -45,6 +45,7 @@ final class _OrdersPageState extends State<OrdersPage> {
 
   void _reloadOrders() {
     setState(() {
+      _isActiveTab = true;
       _ordersFuture = _loadOrders();
     });
   }
