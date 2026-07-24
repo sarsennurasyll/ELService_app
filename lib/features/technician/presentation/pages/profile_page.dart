@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -9,6 +11,7 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../features/auth/domain/repositories/auth_repository.dart';
 import '../../../../features/reviews/domain/models/master_rating.dart';
 import '../../../../features/reviews/domain/models/review.dart';
 import '../../../../features/reviews/domain/repositories/review_repository.dart';
@@ -16,11 +19,13 @@ import '../../../../shared/widgets/cards/app_card.dart';
 
 final class ProfilePage extends StatefulWidget {
   const ProfilePage({
+    required this.authRepository,
     required this.reviewRepository,
     required this.tokenStorage,
     super.key,
   });
 
+  final AuthRepository authRepository;
   final ReviewRepository reviewRepository;
   final TokenStorage tokenStorage;
 
@@ -110,7 +115,7 @@ final class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: AppSpacing.space8),
                     ],
                     const SizedBox(height: AppSpacing.space8),
-                    const _LogOutItem(),
+                    _LogOutItem(onTap: _logout),
                   ],
                 ),
               ),
@@ -119,6 +124,20 @@ final class _ProfilePageState extends State<ProfilePage> {
         );
       },
     );
+  }
+
+  Future<void> _logout() async {
+    final result = await widget.authRepository.logout();
+    if (!mounted) {
+      return;
+    }
+
+    if (result is ErrorResult<void>) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.failure.message)),
+      );
+    }
+    context.go(AppRoutes.login);
   }
 }
 
@@ -485,14 +504,14 @@ final class _ProfileMenuItem extends StatelessWidget {
 }
 
 final class _LogOutItem extends StatelessWidget {
-  const _LogOutItem();
+  const _LogOutItem({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      onTap: () {
-        // TODO: подключить выход из аккаунта.
-      },
+      onTap: onTap,
       child: Row(
         children: [
           SizedBox(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -8,12 +10,18 @@ import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../domain/models/user.dart';
 import '../../domain/repositories/user_repository.dart';
 
 final class ProfilePage extends StatefulWidget {
-  const ProfilePage({required this.userRepository, super.key});
+  const ProfilePage({
+    required this.authRepository,
+    required this.userRepository,
+    super.key,
+  });
 
+  final AuthRepository authRepository;
   final UserRepository userRepository;
 
   @override
@@ -54,6 +62,7 @@ final class _ProfilePageState extends State<ProfilePage> {
           return _ProfileContent(
             user: result.value,
             onEdit: () => _showEditProfile(result.value),
+            onLogout: _logout,
           );
         }
 
@@ -76,13 +85,32 @@ final class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
+  Future<void> _logout() async {
+    final result = await widget.authRepository.logout();
+    if (!mounted) {
+      return;
+    }
+
+    if (result is ErrorResult<void>) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.failure.message)),
+      );
+    }
+    context.go(AppRoutes.login);
+  }
 }
 
 final class _ProfileContent extends StatelessWidget {
-  const _ProfileContent({required this.user, required this.onEdit});
+  const _ProfileContent({
+    required this.user,
+    required this.onEdit,
+    required this.onLogout,
+  });
 
   final User user;
   final VoidCallback onEdit;
+  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +128,7 @@ final class _ProfileContent extends StatelessWidget {
                     const SizedBox(height: AppSpacing.space8),
                 ],
                 const SizedBox(height: AppSpacing.space8),
-                const _LogOutItem(),
+                _LogOutItem(onTap: onLogout),
               ],
             ),
           ),
@@ -462,14 +490,14 @@ final class _ProfileMenuItem extends StatelessWidget {
 }
 
 final class _LogOutItem extends StatelessWidget {
-  const _LogOutItem();
+  const _LogOutItem({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      onTap: () {
-        // TODO: подключить выход из аккаунта.
-      },
+      onTap: onTap,
       child: Row(
         children: [
           SizedBox(

@@ -67,8 +67,8 @@ final class _RegisterPageState extends State<RegisterPage> {
     }
 
     switch (result) {
-      case Success():
-        context.go(AppRoutes.customerHome);
+      case Success(:final value):
+        context.go(_routeByRole(value.user.role));
       case ErrorResult(:final failure):
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(authErrorMessage(failure))),
@@ -148,6 +148,14 @@ final class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
+}
+
+String _routeByRole(String role) {
+  return switch (role) {
+    'TECHNICIAN' => AppRoutes.technicianDashboard,
+    'ADMIN' => AppRoutes.adminDashboard,
+    _ => AppRoutes.customerHome,
+  };
 }
 
 final class _RoleSelector extends StatelessWidget {

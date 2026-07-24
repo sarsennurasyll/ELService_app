@@ -123,6 +123,16 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
     }
   }
 
+  Future<void> _openOffers(String orderId) async {
+    await context.push(AppRoutes.offers(orderId));
+
+    if (!mounted) {
+      return;
+    }
+
+    _reloadOrder();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Screen(
@@ -174,6 +184,7 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 'cancel',
                 widget.orderRepository.cancelOrder,
               ),
+              onOpenOffers: () => _openOffers(result.value.id),
               onOpenChat: () => _openChat(result.value.id),
             );
           }
@@ -193,6 +204,7 @@ final class _OrderDetailsContent extends StatelessWidget {
     required this.onStart,
     required this.onComplete,
     required this.onCancel,
+    required this.onOpenOffers,
     required this.onOpenChat,
   });
 
@@ -202,6 +214,7 @@ final class _OrderDetailsContent extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onComplete;
   final VoidCallback onCancel;
+  final VoidCallback onOpenOffers;
   final VoidCallback onOpenChat;
 
   @override
@@ -237,6 +250,7 @@ final class _OrderDetailsContent extends StatelessWidget {
               onStart: onStart,
               onComplete: onComplete,
               onCancel: onCancel,
+              onOpenOffers: onOpenOffers,
               onOpenChat: onOpenChat,
             ),
           ),
@@ -254,6 +268,7 @@ final class _OrderActions extends StatelessWidget {
     required this.onStart,
     required this.onComplete,
     required this.onCancel,
+    required this.onOpenOffers,
     required this.onOpenChat,
   });
 
@@ -263,6 +278,7 @@ final class _OrderActions extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onComplete;
   final VoidCallback onCancel;
+  final VoidCallback onOpenOffers;
   final VoidCallback onOpenChat;
 
   @override
@@ -281,7 +297,7 @@ final class _OrderActions extends StatelessWidget {
         child: PrimaryButton(
           label: 'Offers',
           variant: PrimaryButtonVariant.outline,
-          onPressed: () => context.push(AppRoutes.offers(order.id)),
+          onPressed: onOpenOffers,
         ),
       ),
       const SizedBox(width: AppSpacing.space8),

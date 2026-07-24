@@ -161,6 +161,7 @@ final class AppRouter {
                   GoRoute(
                     path: AppRoutes.customerProfile,
                     builder: (context, state) => ProfilePage(
+                      authRepository: authRepository,
                       userRepository: userRepository,
                     ),
                   ),
@@ -218,6 +219,7 @@ final class AppRouter {
                     path: AppRoutes.technicianProfile,
                     builder: (context, state) =>
                         technician_profile.ProfilePage(
+                          authRepository: authRepository,
                           reviewRepository: reviewRepository,
                           tokenStorage: tokenStorage,
                         ),

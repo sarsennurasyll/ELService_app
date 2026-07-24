@@ -2,9 +2,30 @@ import { prisma } from '../prisma/client';
 
 import type { CreateOfferInput } from '../validators/offer.schemas';
 
+export class OfferAcceptConflictError extends Error {
+  constructor() {
+    super('Offer is unavailable');
+    this.name = 'OfferAcceptConflictError';
+  }
+}
+
 export class OfferRepository {
-  create(masterId: string, data: CreateOfferInput) {
-    return prisma.offer.create({ data: { ...data, masterId } });
+  upsert(masterId: string, data: CreateOfferInput) {
+    return prisma.offer.upsert({
+      where: {
+        orderId_masterId: {
+          orderId: data.orderId,
+          masterId,
+        },
+      },
+      create: { ...data, masterId },
+      update: {
+        price: data.price,
+        arrivalTime: data.arrivalTime,
+        comment: data.comment,
+        status: 'ACTIVE',
+      },
+    });
   }
 
   findByOrderId(orderId: string) {
@@ -29,15 +50,46 @@ export class OfferRepository {
       if (!offer || offer.status !== 'ACTIVE') {
         return null;
       }
-      await transaction.offer.update({ where: { id }, data: { status: 'ACCEPTED' } });
+
+      const order = await transaction.order.findUnique({
+        where: { id: offer.orderId },
+        select: { id: true, customerId: true, status: true },
+      });
+      if (!order || order.status !== 'PENDING') {
+        return null;
+      }
+
+      const acceptedOffer = await transaction.offer.updateMany({
+        where: { id, status: 'ACTIVE' },
+        data: { status: 'ACCEPTED' },
+      });
+      if (acceptedOffer.count !== 1) {
+        return null;
+      }
+
+      const updatedOrder = await transaction.order.updateMany({
+        where: { id: offer.orderId, status: 'PENDING' },
+        data: { assignedMasterId: offer.masterId, status: 'ACCEPTED' },
+      });
+      if (updatedOrder.count !== 1) {
+        throw new OfferAcceptConflictError();
+      }
+
       await transaction.offer.updateMany({
         where: { orderId: offer.orderId, id: { not: id }, status: 'ACTIVE' },
         data: { status: 'INACTIVE' },
       });
-      await transaction.order.update({
-        where: { id: offer.orderId },
-        data: { assignedMasterId: offer.masterId, status: 'ACCEPTED' },
+
+      await transaction.conversation.upsert({
+        where: { orderId: offer.orderId },
+        create: {
+          orderId: offer.orderId,
+          userAId: order.customerId,
+          userBId: offer.masterId,
+        },
+        update: {},
       });
+
       return transaction.offer.findUnique({ where: { id } });
     });
   }

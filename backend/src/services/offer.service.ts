@@ -1,4 +1,7 @@
-import { OfferRepository } from '../repositories/offer.repository';
+import {
+  OfferAcceptConflictError,
+  OfferRepository,
+} from '../repositories/offer.repository';
 import { OrderRepository } from '../repositories/order.repository';
 import { AppError } from '../utils/app-error';
 import type { JwtPayload } from '../types/auth.types';
@@ -15,7 +18,7 @@ export class OfferService {
     const order = await this.orderRepository.findById(input.orderId);
     if (!order) throw new AppError(404, 'Order not found', 'ORDER_NOT_FOUND');
     if (order.status !== 'PENDING') throw new AppError(409, 'Order is unavailable', 'ORDER_UNAVAILABLE');
-    return this.offerRepository.create(user.sub, input);
+    return this.offerRepository.upsert(user.sub, input);
   }
 
   async getOffers(user: JwtPayload, orderId: string) {
@@ -33,9 +36,16 @@ export class OfferService {
     const order = await this.orderRepository.findById(offer.orderId);
     if (!order) throw new AppError(404, 'Order not found', 'ORDER_NOT_FOUND');
     if (user.role !== 'ADMIN' && user.sub !== order.customerId) throw new AppError(403, 'Forbidden', 'FORBIDDEN');
-    const acceptedOffer = await this.offerRepository.accept(offerId);
-    if (!acceptedOffer) throw new AppError(409, 'Offer is unavailable', 'OFFER_UNAVAILABLE');
-    return acceptedOffer;
+    try {
+      const acceptedOffer = await this.offerRepository.accept(offerId);
+      if (!acceptedOffer) throw new AppError(409, 'Offer is unavailable', 'OFFER_UNAVAILABLE');
+      return acceptedOffer;
+    } catch (error) {
+      if (error instanceof OfferAcceptConflictError) {
+        throw new AppError(409, 'Offer is unavailable', 'OFFER_UNAVAILABLE');
+      }
+      throw error;
+    }
   }
 
   async deleteOffer(user: JwtPayload, offerId: string) {
