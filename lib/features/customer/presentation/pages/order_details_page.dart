@@ -293,14 +293,16 @@ final class _OrderActions extends StatelessWidget {
     }
 
     final actions = <Widget>[
-      Expanded(
-        child: PrimaryButton(
-          label: 'Offers',
-          variant: PrimaryButtonVariant.outline,
-          onPressed: onOpenOffers,
+      if (_canViewOffers(order, session)) ...[
+        Expanded(
+          child: PrimaryButton(
+            label: 'Offers',
+            variant: PrimaryButtonVariant.outline,
+            onPressed: onOpenOffers,
+          ),
         ),
-      ),
-      const SizedBox(width: AppSpacing.space8),
+        const SizedBox(width: AppSpacing.space8),
+      ],
       Expanded(
         child: PrimaryButton(
           label: 'Chat',
@@ -823,6 +825,10 @@ bool _canOpenChat(_OrderDetails order, _CurrentSession? session) {
 
   return session?.role == 'CUSTOMER' && order.customerId == session?.id ||
       session?.role == 'TECHNICIAN' && assignedMasterId == session?.id;
+}
+
+bool _canViewOffers(_OrderDetails order, _CurrentSession? session) {
+  return session?.role == 'CUSTOMER' && order.customerId == session?.id;
 }
 
 bool _canReview(_OrderDetails order, _CurrentSession? session) {
