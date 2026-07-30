@@ -8,6 +8,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
+import '../../../../shared/widgets/settings/language_settings_sheet.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 
 final class SettingsPage extends StatelessWidget {
@@ -88,6 +89,11 @@ final class _SettingsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        if (item.opensLanguageSettings) {
+          showLanguageSettingsSheet(context);
+          return;
+        }
+
         // TODO: открыть настройку.
       },
       behavior: HitTestBehavior.opaque,
@@ -194,14 +200,21 @@ final class _SettingsItem {
     required this.icon,
     required this.label,
     this.subtitle,
+    this.opensLanguageSettings = false,
   });
 
   final IconData icon;
   final String label;
   final String? subtitle;
+  final bool opensLanguageSettings;
 }
 
 const _settingsItems = [
+  _SettingsItem(
+    icon: Icons.language,
+    label: 'Language',
+    opensLanguageSettings: true,
+  ),
   _SettingsItem(
     icon: Icons.percent,
     label: 'Commission rate',

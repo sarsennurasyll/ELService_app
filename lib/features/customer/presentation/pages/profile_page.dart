@@ -10,6 +10,7 @@ import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
+import '../../../../shared/widgets/settings/language_settings_sheet.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../domain/models/user.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -449,6 +450,11 @@ final class _ProfileMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       onTap: () {
+        if (item.opensLanguageSettings) {
+          showLanguageSettingsSheet(context);
+          return;
+        }
+
         // TODO: открыть раздел профиля.
       },
       child: Row(
@@ -532,10 +538,15 @@ final class _LogOutItem extends StatelessWidget {
 }
 
 final class _ProfileMenuItemData {
-  const _ProfileMenuItemData({required this.icon, required this.label});
+  const _ProfileMenuItemData({
+    required this.icon,
+    required this.label,
+    this.opensLanguageSettings = false,
+  });
 
   final IconData icon;
   final String label;
+  final bool opensLanguageSettings;
 }
 
 const _profileMenuItems = [
@@ -552,6 +563,10 @@ const _profileMenuItems = [
     icon: Icons.account_balance_wallet_outlined,
     label: 'Promo codes',
   ),
-  _ProfileMenuItemData(icon: Icons.settings_outlined, label: 'Settings'),
+  _ProfileMenuItemData(
+    icon: Icons.settings_outlined,
+    label: 'Settings',
+    opensLanguageSettings: true,
+  ),
   _ProfileMenuItemData(icon: Icons.help_outline, label: 'Help center'),
 ];

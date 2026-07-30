@@ -18,6 +18,7 @@ import '../../../../features/reviews/domain/models/master_rating.dart';
 import '../../../../features/reviews/domain/models/review.dart';
 import '../../../../features/reviews/domain/repositories/review_repository.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
+import '../../../../shared/widgets/settings/language_settings_sheet.dart';
 
 final class ProfilePage extends StatefulWidget {
   const ProfilePage({
@@ -483,6 +484,11 @@ final class _ProfileMenuItem extends StatelessWidget {
           return;
         }
 
+        if (item.opensLanguageSettings) {
+          showLanguageSettingsSheet(context);
+          return;
+        }
+
         // TODO: открыть раздел профиля.
       },
       child: Row(
@@ -582,11 +588,13 @@ final class _ProfileMenuItemData {
     required this.icon,
     required this.label,
     this.route,
+    this.opensLanguageSettings = false,
   });
 
   final IconData icon;
   final String label;
   final String? route;
+  final bool opensLanguageSettings;
 }
 
 const _profileMenuItems = [
@@ -600,7 +608,11 @@ const _profileMenuItems = [
   _ProfileMenuItemData(icon: Icons.calendar_today_outlined, label: 'Schedule'),
   _ProfileMenuItemData(icon: Icons.location_on_outlined, label: 'Service area'),
   _ProfileMenuItemData(icon: Icons.workspace_premium_outlined, label: 'Certifications'),
-  _ProfileMenuItemData(icon: Icons.settings_outlined, label: 'Settings'),
+  _ProfileMenuItemData(
+    icon: Icons.settings_outlined,
+    label: 'Settings',
+    opensLanguageSettings: true,
+  ),
   _ProfileMenuItemData(icon: Icons.help_outline, label: 'Help'),
 ];
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
+import '../core/storage/locale_storage.dart';
 import '../core/storage/token_storage.dart';
 import '../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
@@ -24,8 +26,11 @@ import '../features/proposals/domain/repositories/offer_repository.dart';
 import '../features/reviews/data/datasources/review_remote_datasource.dart';
 import '../features/reviews/data/repositories/review_repository_impl.dart';
 import '../features/reviews/domain/repositories/review_repository.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/locale_controller.dart';
 import 'bootstrap/app_config.dart';
 import 'router/app_router.dart';
+import 'theme/app_theme.dart';
 
 final class App extends StatefulWidget {
   const App({required this.config, super.key});
@@ -38,6 +43,9 @@ final class App extends StatefulWidget {
 
 final class _AppState extends State<App> {
   late final TokenStorage _tokenStorage = SecureTokenStorage();
+  late final LocaleController _localeController = LocaleController(
+    storage: SecureLocaleStorage(),
+  );
   late final ApiClient _apiClient = ApiClient(
     config: ApiConfig(baseUrl: widget.config.apiBaseUrl),
     tokenStorage: _tokenStorage,
@@ -78,16 +86,38 @@ final class _AppState extends State<App> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    _localeController.restore();
+  }
+
+  @override
   void dispose() {
     _ordersRefreshNotifier.dispose();
+    _localeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: widget.config.appName,
-      routerConfig: _appRouter.router,
+    return ValueListenableBuilder<Locale?>(
+      valueListenable: _localeController,
+      builder: (context, locale, child) => LocaleScope(
+        controller: _localeController,
+        child: MaterialApp.router(
+          title: widget.config.appName,
+          theme: AppTheme.light,
+          locale: locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: _appRouter.router,
+        ),
+      ),
     );
   }
 }

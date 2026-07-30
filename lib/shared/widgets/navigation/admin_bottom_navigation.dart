@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../l10n/app_localizations.dart';
 
 final class AdminBottomNavigation extends StatelessWidget {
   const AdminBottomNavigation({
@@ -16,6 +17,7 @@ final class AdminBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       child: DecoratedBox(
@@ -34,7 +36,7 @@ final class AdminBottomNavigation extends StatelessWidget {
             children: [
               _NavigationItem(
                 index: 0,
-                label: 'Dashboard',
+                label: localizations.dashboard,
                 icon: Icons.dashboard_outlined,
                 selectedIcon: Icons.dashboard,
                 currentIndex: currentIndex,
@@ -42,7 +44,7 @@ final class AdminBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 1,
-                label: 'Orders',
+                label: localizations.orders,
                 icon: Icons.list_alt_outlined,
                 selectedIcon: Icons.list_alt,
                 currentIndex: currentIndex,
@@ -50,7 +52,7 @@ final class AdminBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 2,
-                label: 'Users',
+                label: localizations.users,
                 icon: Icons.group_outlined,
                 selectedIcon: Icons.group,
                 currentIndex: currentIndex,
@@ -58,7 +60,7 @@ final class AdminBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 3,
-                label: 'Analytics',
+                label: localizations.analytics,
                 icon: Icons.bar_chart_outlined,
                 selectedIcon: Icons.bar_chart,
                 currentIndex: currentIndex,
@@ -66,7 +68,7 @@ final class AdminBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 4,
-                label: 'Settings',
+                label: localizations.settings,
                 icon: Icons.settings_outlined,
                 selectedIcon: Icons.settings,
                 currentIndex: currentIndex,

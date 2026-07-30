@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../l10n/app_localizations.dart';
 
 final class CustomerBottomNavigation extends StatelessWidget {
   const CustomerBottomNavigation({
@@ -16,6 +17,7 @@ final class CustomerBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       child: DecoratedBox(
@@ -34,7 +36,7 @@ final class CustomerBottomNavigation extends StatelessWidget {
             children: [
               _NavigationItem(
                 index: 0,
-                label: 'Home',
+                label: localizations.home,
                 icon: Icons.home_outlined,
                 selectedIcon: Icons.home,
                 currentIndex: currentIndex,
@@ -42,7 +44,7 @@ final class CustomerBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 1,
-                label: 'Orders',
+                label: localizations.orders,
                 icon: Icons.list_alt_outlined,
                 selectedIcon: Icons.list_alt,
                 currentIndex: currentIndex,
@@ -50,7 +52,7 @@ final class CustomerBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 2,
-                label: 'Chat',
+                label: localizations.chat,
                 icon: Icons.chat_bubble_outline,
                 selectedIcon: Icons.chat_bubble,
                 currentIndex: currentIndex,
@@ -58,7 +60,7 @@ final class CustomerBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 3,
-                label: 'Profile',
+                label: localizations.profile,
                 icon: Icons.person_outline,
                 selectedIcon: Icons.person,
                 currentIndex: currentIndex,
