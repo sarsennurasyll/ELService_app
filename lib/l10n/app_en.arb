@@ -22,4 +22,10 @@
   "loading": "Loading…",
   "error": "Something went wrong",
   "empty": "Nothing here yet"
+  ,"back": "Back"
+  ,"newRepairRequest": "New Repair Request"
+  ,"orderDetails": "Order details"
+  ,"technicianOffers": "Technician Offers"
+  ,"sendOffer": "Send offer"
+  ,"rateTechnician": "Rate technician"
 }

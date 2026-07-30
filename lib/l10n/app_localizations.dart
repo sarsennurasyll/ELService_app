@@ -231,6 +231,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing here yet'**
   String get empty;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @newRepairRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'New Repair Request'**
+  String get newRepairRequest;
+
+  /// No description provided for @orderDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Order details'**
+  String get orderDetails;
+
+  /// No description provided for @technicianOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Technician Offers'**
+  String get technicianOffers;
+
+  /// No description provided for @sendOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Send offer'**
+  String get sendOffer;
+
+  /// No description provided for @rateTechnician.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate technician'**
+  String get rateTechnician;
 }
 
 class _AppLocalizationsDelegate

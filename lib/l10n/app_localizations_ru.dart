@@ -73,4 +73,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get empty => 'Пока ничего нет';
+
+  @override
+  String get back => 'Назад';
+
+  @override
+  String get newRepairRequest => 'Новая заявка на ремонт';
+
+  @override
+  String get orderDetails => 'Детали заказа';
+
+  @override
+  String get technicianOffers => 'Предложения мастеров';
+
+  @override
+  String get sendOffer => 'Отправить предложение';
+
+  @override
+  String get rateTechnician => 'Оценить мастера';
 }

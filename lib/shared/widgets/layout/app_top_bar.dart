@@ -4,6 +4,8 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/app_localizations_extension.dart';
 
 final class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopBar({
@@ -36,15 +38,18 @@ final class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
           ? null
           : Padding(
               padding: const EdgeInsets.only(left: AppSpacing.space20),
-              child: GestureDetector(
-                onTap: onBack,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppRadius.large),
-                    border: Border.all(color: AppColors.border),
+              child: Tooltip(
+                message: AppLocalizations.of(context)!.back,
+                child: GestureDetector(
+                  onTap: onBack,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.large),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: const Center(child: Icon(Icons.arrow_back)),
                   ),
-                  child: const Center(child: Icon(Icons.arrow_back)),
                 ),
               ),
             ),
@@ -53,7 +58,7 @@ final class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            title,
+            context.localizeAppBarTitle(title),
             style: AppTextStyles.titleMedium.copyWith(
               color: AppColors.foreground,
             ),

@@ -73,4 +73,22 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get empty => 'Әзірге ештеңе жоқ';
+
+  @override
+  String get back => 'Артқа';
+
+  @override
+  String get newRepairRequest => 'Жаңа жөндеу өтінімі';
+
+  @override
+  String get orderDetails => 'Тапсырыс мәліметтері';
+
+  @override
+  String get technicianOffers => 'Маман ұсыныстары';
+
+  @override
+  String get sendOffer => 'Ұсыныс жіберу';
+
+  @override
+  String get rateTechnician => 'Маманды бағалау';
 }

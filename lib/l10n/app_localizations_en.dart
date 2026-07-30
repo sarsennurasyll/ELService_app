@@ -73,4 +73,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get empty => 'Nothing here yet';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get newRepairRequest => 'New Repair Request';
+
+  @override
+  String get orderDetails => 'Order details';
+
+  @override
+  String get technicianOffers => 'Technician Offers';
+
+  @override
+  String get sendOffer => 'Send offer';
+
+  @override
+  String get rateTechnician => 'Rate technician';
 }

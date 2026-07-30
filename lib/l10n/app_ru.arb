@@ -22,4 +22,10 @@
   "loading": "Загрузка…",
   "error": "Что-то пошло не так",
   "empty": "Пока ничего нет"
+  ,"back": "Назад"
+  ,"newRepairRequest": "Новая заявка на ремонт"
+  ,"orderDetails": "Детали заказа"
+  ,"technicianOffers": "Предложения мастеров"
+  ,"sendOffer": "Отправить предложение"
+  ,"rateTechnician": "Оценить мастера"
 }

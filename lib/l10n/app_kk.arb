@@ -22,4 +22,10 @@
   "loading": "Жүктелуде…",
   "error": "Қате орын алды",
   "empty": "Әзірге ештеңе жоқ"
+  ,"back": "Артқа"
+  ,"newRepairRequest": "Жаңа жөндеу өтінімі"
+  ,"orderDetails": "Тапсырыс мәліметтері"
+  ,"technicianOffers": "Маман ұсыныстары"
+  ,"sendOffer": "Ұсыныс жіберу"
+  ,"rateTechnician": "Маманды бағалау"
 }
