@@ -5,10 +5,28 @@ import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_shadows.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
+import '../../../customer/domain/models/user.dart';
+import '../../../customer/domain/repositories/user_repository.dart';
 
-final class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+final class DashboardPage extends StatefulWidget {
+  const DashboardPage({required this.userRepository, super.key});
+
+  final UserRepository userRepository;
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+final class _DashboardPageState extends State<DashboardPage> {
+  late final Future<Result<User>> _userFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userFuture = widget.userRepository.getCurrentUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +40,7 @@ final class DashboardPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _DashboardHeader(),
+          _DashboardHeader(userFuture: _userFuture),
           const SizedBox(height: AppSpacing.space20),
           const _EarningsBanner(),
           const SizedBox(height: AppSpacing.space20),
@@ -46,7 +64,9 @@ final class DashboardPage extends StatelessWidget {
 }
 
 final class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader();
+  const _DashboardHeader({required this.userFuture});
+
+  final Future<Result<User>> userFuture;
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +83,21 @@ final class _DashboardHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.space4),
-            Text(
-              'Dmitry Volkov',
-              style: AppTextStyles.headlineMedium.copyWith(
-                color: AppColors.foreground,
-              ),
+            FutureBuilder<Result<User>>(
+              future: userFuture,
+              builder: (context, snapshot) {
+                final name = switch (snapshot.data) {
+                  Success<User>(:final value) => value.fullName,
+                  _ => 'Technician',
+                };
+
+                return Text(
+                  name,
+                  style: AppTextStyles.headlineMedium.copyWith(
+                    color: AppColors.foreground,
+                  ),
+                );
+              },
             ),
           ],
         ),

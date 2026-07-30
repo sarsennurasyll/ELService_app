@@ -12,6 +12,8 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../features/auth/domain/repositories/auth_repository.dart';
+import '../../../../features/customer/domain/models/user.dart';
+import '../../../../features/customer/domain/repositories/user_repository.dart';
 import '../../../../features/reviews/domain/models/master_rating.dart';
 import '../../../../features/reviews/domain/models/review.dart';
 import '../../../../features/reviews/domain/repositories/review_repository.dart';
@@ -22,30 +24,38 @@ final class ProfilePage extends StatefulWidget {
     required this.authRepository,
     required this.reviewRepository,
     required this.tokenStorage,
+    required this.userRepository,
     super.key,
   });
 
   final AuthRepository authRepository;
   final ReviewRepository reviewRepository;
   final TokenStorage tokenStorage;
+  final UserRepository userRepository;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 final class _ProfilePageState extends State<ProfilePage> {
-  late Future<_ProfileReviewsState> _reviewsFuture;
+  late Future<_ProfileState> _profileFuture;
 
   @override
   void initState() {
     super.initState();
-    _reviewsFuture = _loadReviews();
+    _profileFuture = _loadProfile();
   }
 
-  Future<_ProfileReviewsState> _loadReviews() async {
-    final masterId = await _currentMasterId();
+  Future<_ProfileState> _loadProfile() async {
+    final userResult = await widget.userRepository.getCurrentUser();
+    final user = switch (userResult) {
+      Success<User>(:final value) => value,
+      _ => null,
+    };
+    final masterId = user?.id ?? await _currentMasterId();
     if (masterId == null) {
-      return const _ProfileReviewsState(
+      return _ProfileState(
+        user: user,
         rating: ErrorResult(Failure(message: 'Не удалось определить мастера')),
         reviews: ErrorResult(Failure(message: 'Не удалось определить мастера')),
       );
@@ -53,7 +63,7 @@ final class _ProfilePageState extends State<ProfilePage> {
 
     final rating = await widget.reviewRepository.getMasterRating(masterId);
     final reviews = await widget.reviewRepository.getMasterReviews(masterId);
-    return _ProfileReviewsState(rating: rating, reviews: reviews);
+    return _ProfileState(user: user, rating: rating, reviews: reviews);
   }
 
   Future<String?> _currentMasterId() async {
@@ -74,8 +84,8 @@ final class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<_ProfileReviewsState>(
-      future: _reviewsFuture,
+    return FutureBuilder<_ProfileState>(
+      future: _profileFuture,
       builder: (context, snapshot) {
         final state = snapshot.data;
         final rating = state?.rating;
@@ -94,6 +104,7 @@ final class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               _ProfileHeader(
+                user: state?.user,
                 rating: ratingValue,
                 reviewsCount: reviewsCount,
               ),
@@ -143,10 +154,12 @@ final class _ProfilePageState extends State<ProfilePage> {
 
 final class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({
+    required this.user,
     required this.rating,
     required this.reviewsCount,
   });
 
+  final User? user;
   final double rating;
   final int reviewsCount;
 
@@ -188,7 +201,7 @@ final class _ProfileHeader extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'DV',
+                        _initials(user?.fullName),
                         style: AppTextStyles.titleLarge.copyWith(
                           color: AppColors.surface,
                           fontWeight: FontWeight.w700,
@@ -203,14 +216,16 @@ final class _ProfileHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Dmitry Volkov',
+                        user?.fullName ?? 'Technician',
                         style: AppTextStyles.headlineMedium.copyWith(
                           color: AppColors.surface,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.space4),
                       Text(
-                        'Electronics Master · Verified',
+                        user?.city?.isNotEmpty == true
+                            ? user!.city!
+                            : 'Technician',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.surface.withValues(
                             alpha: AppColors.primary80.a,
@@ -545,12 +560,14 @@ final class _LogOutItem extends StatelessWidget {
   }
 }
 
-final class _ProfileReviewsState {
-  const _ProfileReviewsState({
+final class _ProfileState {
+  const _ProfileState({
+    required this.user,
     required this.rating,
     required this.reviews,
   });
 
+  final User? user;
   final Result<MasterRating> rating;
   final Result<List<Review>> reviews;
 }
