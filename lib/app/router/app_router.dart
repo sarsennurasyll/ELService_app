@@ -61,6 +61,7 @@ final class AppRouter {
             builder: (context, state) => ChatMessagesPage(
               chatId: state.pathParameters['id']!,
               repository: chatRepository,
+              tokenStorage: tokenStorage,
             ),
           ),
           GoRoute(
