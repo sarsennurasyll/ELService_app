@@ -58,9 +58,9 @@ final class TechnicianBottomNavigation extends StatelessWidget {
               ),
               _NavigationItem(
                 index: 3,
-                label: 'Earnings',
-                icon: Icons.account_balance_wallet_outlined,
-                selectedIcon: Icons.account_balance_wallet,
+                label: 'Chat',
+                icon: Icons.chat_bubble_outline,
+                selectedIcon: Icons.chat_bubble,
                 currentIndex: currentIndex,
                 onDestinationSelected: onDestinationSelected,
               ),

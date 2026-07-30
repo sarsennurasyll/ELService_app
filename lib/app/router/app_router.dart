@@ -53,243 +53,247 @@ final class AppRouter {
     required ReviewRepository reviewRepository,
     required TokenStorage tokenStorage,
     required ValueNotifier<int> ordersRefreshNotifier,
-  })
-    : router = GoRouter(
-        routes: [
-          GoRoute(
-            path: AppRoutes.customerChatMessages,
-            builder: (context, state) => ChatMessagesPage(
-              chatId: state.pathParameters['id']!,
-              repository: chatRepository,
-              tokenStorage: tokenStorage,
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.customerOffers,
-            builder: (context, state) => OffersPage(orderId: state.pathParameters['id']!, repository: offerRepository),
-          ),
-          GoRoute(
-            path: AppRoutes.customerReview,
-            builder: (context, state) => ReviewPage(
-              orderId: state.pathParameters['id']!,
-              reviewRepository: reviewRepository,
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.technicianSendOffer,
-            builder: (context, state) => SendOfferPage(orderId: state.pathParameters['id']!, repository: offerRepository),
-          ),
-          GoRoute(
-            path: AppRoutes.root,
-            builder: (context, state) => const SplashPage(),
-          ),
-          GoRoute(
-            path: AppRoutes.login,
-            builder: (context, state) => LoginPage(
-              authRepository: authRepository,
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.register,
-            builder: (context, state) => RegisterPage(
-              authRepository: authRepository,
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.customerCreateOrder,
-            builder: (context, state) => CreateOrderPage(
-              categoryRepository: categoryRepository,
-              orderRepository: orderRepository,
-              tokenStorage: tokenStorage,
-              ordersRefreshNotifier: ordersRefreshNotifier,
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.customerOrderDetails,
-            builder: (context, state) {
-              final orderId = state.pathParameters['id'] ?? '1';
-              return OrderDetailsPage(
-                orderId: orderId,
-                orderRepository: orderRepository,
-                chatRepository: chatRepository,
-                tokenStorage: tokenStorage,
-              );
-            },
-          ),
-          StatefulShellRoute.indexedStack(
-            builder: (context, state, navigationShell) => Screen(
-              bottomNavigationBar: CustomerBottomNavigation(
-                currentIndex: navigationShell.currentIndex,
-                onDestinationSelected: navigationShell.goBranch,
-              ),
-              padding: EdgeInsets.zero,
-              child: navigationShell,
-            ),
-            branches: [
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.customerHome,
-                    builder: (context, state) => HomePage(
-                      categoryRepository: categoryRepository,
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.customerOrders,
-                    builder: (context, state) => OrdersPage(
-                      orderRepository: orderRepository,
-                      ordersRefreshNotifier: ordersRefreshNotifier,
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.customerMessages,
-                    builder: (context, state) => ChatPage(
-                      repository: chatRepository,
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.customerProfile,
-                    builder: (context, state) => ProfilePage(
-                      authRepository: authRepository,
-                      userRepository: userRepository,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellRoute.indexedStack(
-            builder: (context, state, navigationShell) => Screen(
-              bottomNavigationBar: TechnicianBottomNavigation(
-                currentIndex: navigationShell.currentIndex,
-                onDestinationSelected: navigationShell.goBranch,
-              ),
-              padding: EdgeInsets.zero,
-              child: navigationShell,
-            ),
-            branches: [
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.technicianDashboard,
-                    builder: (context, state) => DashboardPage(
-                      userRepository: userRepository,
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.technicianOrders,
-                    builder: (context, state) => technician_orders.OrdersPage(
-                      orderRepository: orderRepository,
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.technicianCalendar,
-                    builder: (context, state) => const CalendarPage(),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.technicianEarnings,
-                    builder: (context, state) => const EarningsPage(),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.technicianProfile,
-                    builder: (context, state) =>
-                        technician_profile.ProfilePage(
-                          authRepository: authRepository,
-                          reviewRepository: reviewRepository,
-                          tokenStorage: tokenStorage,
-                          userRepository: userRepository,
-                        ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellRoute.indexedStack(
-            builder: (context, state, navigationShell) => Screen(
-              bottomNavigationBar: AdminBottomNavigation(
-                currentIndex: navigationShell.currentIndex,
-                onDestinationSelected: navigationShell.goBranch,
-              ),
-              padding: EdgeInsets.zero,
-              child: navigationShell,
-            ),
-            branches: [
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.adminDashboard,
-                    builder: (context, state) =>
-                        const admin_dashboard.DashboardPage(),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.adminOrders,
-                    builder: (context, state) =>
-                        const admin_orders.OrdersPage(),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.adminUsers,
-                    builder: (context, state) => const UsersPage(),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.adminAnalytics,
-                    builder: (context, state) => const AnalyticsPage(),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: AppRoutes.adminSettings,
-                    builder: (context, state) => SettingsPage(
-                      authRepository: authRepository,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      );
+  }) : router = GoRouter(
+         routes: [
+           GoRoute(
+             path: AppRoutes.customerChatMessages,
+             builder: (context, state) => ChatMessagesPage(
+               chatId: state.pathParameters['id']!,
+               repository: chatRepository,
+               tokenStorage: tokenStorage,
+             ),
+           ),
+           GoRoute(
+             path: AppRoutes.customerOffers,
+             builder: (context, state) => OffersPage(
+               orderId: state.pathParameters['id']!,
+               repository: offerRepository,
+             ),
+           ),
+           GoRoute(
+             path: AppRoutes.customerReview,
+             builder: (context, state) => ReviewPage(
+               orderId: state.pathParameters['id']!,
+               reviewRepository: reviewRepository,
+             ),
+           ),
+           GoRoute(
+             path: AppRoutes.technicianSendOffer,
+             builder: (context, state) => SendOfferPage(
+               orderId: state.pathParameters['id']!,
+               repository: offerRepository,
+             ),
+           ),
+           GoRoute(
+             path: AppRoutes.technicianEarnings,
+             builder: (context, state) => const EarningsPage(),
+           ),
+           GoRoute(
+             path: AppRoutes.root,
+             builder: (context, state) => const SplashPage(),
+           ),
+           GoRoute(
+             path: AppRoutes.login,
+             builder: (context, state) =>
+                 LoginPage(authRepository: authRepository),
+           ),
+           GoRoute(
+             path: AppRoutes.register,
+             builder: (context, state) =>
+                 RegisterPage(authRepository: authRepository),
+           ),
+           GoRoute(
+             path: AppRoutes.customerCreateOrder,
+             builder: (context, state) => CreateOrderPage(
+               categoryRepository: categoryRepository,
+               orderRepository: orderRepository,
+               tokenStorage: tokenStorage,
+               ordersRefreshNotifier: ordersRefreshNotifier,
+             ),
+           ),
+           GoRoute(
+             path: AppRoutes.customerOrderDetails,
+             builder: (context, state) {
+               final orderId = state.pathParameters['id'] ?? '1';
+               return OrderDetailsPage(
+                 orderId: orderId,
+                 orderRepository: orderRepository,
+                 chatRepository: chatRepository,
+                 tokenStorage: tokenStorage,
+               );
+             },
+           ),
+           StatefulShellRoute.indexedStack(
+             builder: (context, state, navigationShell) => Screen(
+               bottomNavigationBar: CustomerBottomNavigation(
+                 currentIndex: navigationShell.currentIndex,
+                 onDestinationSelected: navigationShell.goBranch,
+               ),
+               padding: EdgeInsets.zero,
+               child: navigationShell,
+             ),
+             branches: [
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.customerHome,
+                     builder: (context, state) =>
+                         HomePage(categoryRepository: categoryRepository),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.customerOrders,
+                     builder: (context, state) => OrdersPage(
+                       orderRepository: orderRepository,
+                       ordersRefreshNotifier: ordersRefreshNotifier,
+                     ),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.customerMessages,
+                     builder: (context, state) =>
+                         ChatPage(repository: chatRepository),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.customerProfile,
+                     builder: (context, state) => ProfilePage(
+                       authRepository: authRepository,
+                       userRepository: userRepository,
+                     ),
+                   ),
+                 ],
+               ),
+             ],
+           ),
+           StatefulShellRoute.indexedStack(
+             builder: (context, state, navigationShell) => Screen(
+               bottomNavigationBar: TechnicianBottomNavigation(
+                 currentIndex: navigationShell.currentIndex,
+                 onDestinationSelected: navigationShell.goBranch,
+               ),
+               padding: EdgeInsets.zero,
+               child: navigationShell,
+             ),
+             branches: [
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.technicianDashboard,
+                     builder: (context, state) =>
+                         DashboardPage(userRepository: userRepository),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.technicianOrders,
+                     builder: (context, state) => technician_orders.OrdersPage(
+                       orderRepository: orderRepository,
+                     ),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.technicianCalendar,
+                     builder: (context, state) => const CalendarPage(),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.technicianChat,
+                     builder: (context, state) =>
+                         ChatPage(repository: chatRepository),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.technicianProfile,
+                     builder: (context, state) =>
+                         technician_profile.ProfilePage(
+                           authRepository: authRepository,
+                           reviewRepository: reviewRepository,
+                           tokenStorage: tokenStorage,
+                           userRepository: userRepository,
+                         ),
+                   ),
+                 ],
+               ),
+             ],
+           ),
+           StatefulShellRoute.indexedStack(
+             builder: (context, state, navigationShell) => Screen(
+               bottomNavigationBar: AdminBottomNavigation(
+                 currentIndex: navigationShell.currentIndex,
+                 onDestinationSelected: navigationShell.goBranch,
+               ),
+               padding: EdgeInsets.zero,
+               child: navigationShell,
+             ),
+             branches: [
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.adminDashboard,
+                     builder: (context, state) =>
+                         const admin_dashboard.DashboardPage(),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.adminOrders,
+                     builder: (context, state) =>
+                         const admin_orders.OrdersPage(),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.adminUsers,
+                     builder: (context, state) => const UsersPage(),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.adminAnalytics,
+                     builder: (context, state) => const AnalyticsPage(),
+                   ),
+                 ],
+               ),
+               StatefulShellBranch(
+                 routes: [
+                   GoRoute(
+                     path: AppRoutes.adminSettings,
+                     builder: (context, state) =>
+                         SettingsPage(authRepository: authRepository),
+                   ),
+                 ],
+               ),
+             ],
+           ),
+         ],
+       );
 
   final GoRouter router;
 }

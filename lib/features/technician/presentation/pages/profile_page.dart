@@ -478,6 +478,11 @@ final class _ProfileMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       onTap: () {
+        if (item.route case final route?) {
+          context.push(route);
+          return;
+        }
+
         // TODO: открыть раздел профиля.
       },
       child: Row(
@@ -573,15 +578,25 @@ final class _ProfileState {
 }
 
 final class _ProfileMenuItemData {
-  const _ProfileMenuItemData({required this.icon, required this.label});
+  const _ProfileMenuItemData({
+    required this.icon,
+    required this.label,
+    this.route,
+  });
 
   final IconData icon;
   final String label;
+  final String? route;
 }
 
 const _profileMenuItems = [
   _ProfileMenuItemData(icon: Icons.star_outline, label: 'Reviews'),
   _ProfileMenuItemData(icon: Icons.bar_chart_outlined, label: 'Statistics'),
+  _ProfileMenuItemData(
+    icon: Icons.account_balance_wallet_outlined,
+    label: 'Earnings',
+    route: AppRoutes.technicianEarnings,
+  ),
   _ProfileMenuItemData(icon: Icons.calendar_today_outlined, label: 'Schedule'),
   _ProfileMenuItemData(icon: Icons.location_on_outlined, label: 'Service area'),
   _ProfileMenuItemData(icon: Icons.workspace_premium_outlined, label: 'Certifications'),
