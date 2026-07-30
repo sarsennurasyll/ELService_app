@@ -55,7 +55,11 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
     super.initState();
     _descriptionController = TextEditingController();
     _addressController = TextEditingController();
-    _timeSlots = _buildTimeSlots(DateTime.now());
+    final now = DateTime.now();
+    _timeSlots = _buildTimeSlots(now);
+    if (!_isSameDay(_timeSlots.first.date, now)) {
+      _selectedTimeIndex = 0;
+    }
   }
 
   @override
@@ -271,7 +275,7 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
     final today = DateTime(now.year, now.month, now.day);
     final thirdDay = today.add(const Duration(days: 2, hours: 10));
 
-    return [
+    final slots = [
       _TimeSlot(
         label: 'Today · 14:00 – 16:00',
         date: today.add(const Duration(hours: 14)),
@@ -289,6 +293,14 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
         date: thirdDay,
       ),
     ];
+
+    return slots.where((slot) => slot.date.isAfter(now)).toList();
+  }
+
+  bool _isSameDay(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
   }
 }
 
