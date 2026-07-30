@@ -42,6 +42,7 @@ final class CreateOrderPage extends StatefulWidget {
 final class _CreateOrderPageState extends State<CreateOrderPage> {
   late final TextEditingController _descriptionController;
   late final TextEditingController _addressController;
+  late final List<_TimeSlot> _timeSlots;
   var _selectedCategoryIndex = 0;
   var _selectedTimeIndex = 1;
   var _photoCount = 2;
@@ -49,18 +50,12 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
   late final Future<Result<List<Category>>> _categoriesFuture =
       widget.categoryRepository.getCategories();
 
-  static const _timeSlots = [
-    'Today · 14:00 – 16:00',
-    'Tomorrow · 10:00 – 12:00',
-    'Tomorrow · 16:00 – 18:00',
-    'Wed 16 · 10:00 – 12:00',
-  ];
-
   @override
   void initState() {
     super.initState();
     _descriptionController = TextEditingController();
     _addressController = TextEditingController();
+    _timeSlots = _buildTimeSlots(DateTime.now());
   }
 
   @override
@@ -173,7 +168,7 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
                 ),
                 const SizedBox(height: AppSpacing.space16),
                 _TimeSection(
-                  slots: _timeSlots,
+                  slots: _timeSlots.map((slot) => slot.label).toList(),
                   selectedIndex: _selectedTimeIndex,
                   onSelected: (index) {
                     setState(() => _selectedTimeIndex = index);
@@ -232,6 +227,7 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
         address: _addressController.text.trim().isEmpty
             ? null
             : _addressController.text.trim(),
+        preferredDate: _timeSlots[_selectedTimeIndex].date,
       ),
     );
     if (!mounted) {
@@ -270,6 +266,41 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
     }
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
+
+  List<_TimeSlot> _buildTimeSlots(DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final thirdDay = today.add(const Duration(days: 2, hours: 10));
+
+    return [
+      _TimeSlot(
+        label: 'Today · 14:00 – 16:00',
+        date: today.add(const Duration(hours: 14)),
+      ),
+      _TimeSlot(
+        label: 'Tomorrow · 10:00 – 12:00',
+        date: today.add(const Duration(days: 1, hours: 10)),
+      ),
+      _TimeSlot(
+        label: 'Tomorrow · 16:00 – 18:00',
+        date: today.add(const Duration(days: 1, hours: 16)),
+      ),
+      _TimeSlot(
+        label: '${_weekdayLabel(thirdDay.weekday)} ${thirdDay.day} · 10:00 – 12:00',
+        date: thirdDay,
+      ),
+    ];
+  }
+}
+
+final class _TimeSlot {
+  const _TimeSlot({required this.label, required this.date});
+
+  final String label;
+  final DateTime date;
+}
+
+String _weekdayLabel(int weekday) {
+  return const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][weekday - 1];
 }
 
 final class _StepIndicator extends StatelessWidget {
