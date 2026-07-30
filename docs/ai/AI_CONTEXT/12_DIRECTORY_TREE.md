@@ -6,11 +6,16 @@
 
 ```text
 ELService/
-  AGENTS.md
   README.md
+  LICENSE
   analysis_options.yaml
   pubspec.yaml
   pubspec.lock
+  docs/
+    ai/
+      AGENTS.md
+      AI_CONTEXT/
+      APP_LOGIC/
   lib/
   backend/
   ELService-design/
@@ -20,7 +25,6 @@ ELService/
   windows/
   linux/
   macos/
-  AI_CONTEXT/
 ```
 
 ## Flutter: lib
@@ -397,21 +401,34 @@ ELService-design/
         и другие shadcn/ui компоненты
 ```
 
-## AI_CONTEXT
+## Документация для AI
 
 ```text
-AI_CONTEXT/
-  01_PROJECT_OVERVIEW.md
-  02_ARCHITECTURE.md
-  03_FRONTEND.md
-  04_BACKEND.md
-  05_DATABASE.md
-  06_API.md
-  07_FEATURES.md
-  08_WORKFLOW.md
-  09_ENVIRONMENT.md
-  10_RUN_PROJECT.md
-  11_KNOWN_PROBLEMS.md
-  12_DIRECTORY_TREE.md
-  13_CHANGELOG.md
+docs/ai/
+  AGENTS.md
+  APP_LOGIC/
+    01_USER_FLOWS.md
+    02_SCREEN_LOGIC.md
+    03_BUSINESS_RULES.md
+    04_STATE_MACHINE.md
+    05_API_REQUIREMENTS.md
+    06_DATABASE_REQUIREMENTS.md
+    07_VALIDATIONS.md
+    08_NOTIFICATIONS.md
+    09_EDGE_CASES.md
+    10_FULL_APPLICATION_DESCRIPTION.md
+  AI_CONTEXT/
+    01_PROJECT_OVERVIEW.md
+    02_ARCHITECTURE.md
+    03_FRONTEND.md
+    04_BACKEND.md
+    05_DATABASE.md
+    06_API.md
+    07_FEATURES.md
+    08_WORKFLOW.md
+    09_ENVIRONMENT.md
+    10_RUN_PROJECT.md
+    11_KNOWN_PROBLEMS.md
+    12_DIRECTORY_TREE.md
+    13_CHANGELOG.md
 ```
