@@ -21,7 +21,10 @@
   "searchChats": "Поиск чатов",
   "loading": "Загрузка…",
   "error": "Что-то пошло не так",
-  "empty": "Пока ничего нет"
+  "empty": "Пока ничего нет",
+  "retry": "Повторить",
+  "noChatsYet": "Пока нет чатов",
+  "unableToLoadChats": "Не удалось загрузить чаты"
   ,"back": "Назад"
   ,"newRepairRequest": "Новая заявка на ремонт"
   ,"orderDetails": "Детали заказа"

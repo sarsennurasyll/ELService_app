@@ -75,6 +75,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get empty => 'Nothing here yet';
 
   @override
+  String get retry => 'Retry';
+
+  @override
+  String get noChatsYet => 'No chats yet';
+
+  @override
+  String get unableToLoadChats => 'Unable to load chats';
+
+  @override
   String get back => 'Back';
 
   @override

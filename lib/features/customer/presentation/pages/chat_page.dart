@@ -7,6 +7,8 @@ import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../domain/models/chat.dart';
 import '../../domain/repositories/chat_repository.dart';
 
@@ -28,6 +30,12 @@ final class _ChatPageState extends State<ChatPage> {
     _chatsFuture = widget.repository.getChats();
   }
 
+  void _reloadChats() {
+    setState(() {
+      _chatsFuture = widget.repository.getChats();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -45,23 +53,15 @@ final class _ChatPageState extends State<ChatPage> {
 
               final result = snapshot.data;
               if (result is ErrorResult<List<Chat>>) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.space32),
-                    child: Text(
-                      result.failure.message,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.error,
-                      ),
-                    ),
-                  ),
+                return _ChatError(
+                  message: result.failure.message,
+                  onRetry: _reloadChats,
                 );
               }
 
               if (result is Success<List<Chat>>) {
                 if (result.value.isEmpty) {
-                  return const Center(child: Text('No chats yet'));
+                  return _ChatEmpty();
                 }
 
                 return ListView.separated(
@@ -75,11 +75,85 @@ final class _ChatPageState extends State<ChatPage> {
                 );
               }
 
-              return const Center(child: Text('Unable to load chats'));
+              return _ChatError(
+                message: AppLocalizations.of(context)!.unableToLoadChats,
+                onRetry: _reloadChats,
+              );
             },
           ),
         ),
       ],
+    );
+  }
+}
+
+final class _ChatError extends StatelessWidget {
+  const _ChatError({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.space32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: AppSpacing.space40,
+              color: AppColors.error,
+            ),
+            const SizedBox(height: AppSpacing.space12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+            ),
+            const SizedBox(height: AppSpacing.space16),
+            SizedBox(
+              width: AppSpacing.space96 + AppSpacing.space32,
+              child: PrimaryButton(
+                label: localizations.retry,
+                variant: PrimaryButtonVariant.outline,
+                onPressed: onRetry,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+final class _ChatEmpty extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.space32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.forum_outlined,
+              size: AppSpacing.space40,
+              color: AppColors.primary,
+            ),
+            const SizedBox(height: AppSpacing.space12),
+            Text(
+              localizations.noChatsYet,
+              style: AppTextStyles.titleMedium.copyWith(
+                color: AppColors.foreground,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

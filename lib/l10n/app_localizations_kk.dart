@@ -75,6 +75,15 @@ class AppLocalizationsKk extends AppLocalizations {
   String get empty => 'Әзірге ештеңе жоқ';
 
   @override
+  String get retry => 'Қайталау';
+
+  @override
+  String get noChatsYet => 'Чаттар әзірге жоқ';
+
+  @override
+  String get unableToLoadChats => 'Чаттарды жүктеу мүмкін болмады';
+
+  @override
   String get back => 'Артқа';
 
   @override

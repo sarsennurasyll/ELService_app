@@ -21,7 +21,10 @@
   "searchChats": "Search chats",
   "loading": "Loading…",
   "error": "Something went wrong",
-  "empty": "Nothing here yet"
+  "empty": "Nothing here yet",
+  "retry": "Retry",
+  "noChatsYet": "No chats yet",
+  "unableToLoadChats": "Unable to load chats"
   ,"back": "Back"
   ,"newRepairRequest": "New Repair Request"
   ,"orderDetails": "Order details"

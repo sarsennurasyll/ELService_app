@@ -232,6 +232,24 @@ abstract class AppLocalizations {
   /// **'Nothing here yet'**
   String get empty;
 
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @noChatsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No chats yet'**
+  String get noChatsYet;
+
+  /// No description provided for @unableToLoadChats.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load chats'**
+  String get unableToLoadChats;
+
   /// No description provided for @back.
   ///
   /// In en, this message translates to:

@@ -75,6 +75,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get empty => 'Пока ничего нет';
 
   @override
+  String get retry => 'Повторить';
+
+  @override
+  String get noChatsYet => 'Пока нет чатов';
+
+  @override
+  String get unableToLoadChats => 'Не удалось загрузить чаты';
+
+  @override
   String get back => 'Назад';
 
   @override
