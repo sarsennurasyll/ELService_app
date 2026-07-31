@@ -10,12 +10,19 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../domain/models/category.dart';
+import '../../domain/models/user.dart';
 import '../../domain/repositories/category_repository.dart';
+import '../../domain/repositories/user_repository.dart';
 
 final class HomePage extends StatefulWidget {
-  const HomePage({required this.categoryRepository, super.key});
+  const HomePage({
+    required this.categoryRepository,
+    required this.userRepository,
+    super.key,
+  });
 
   final CategoryRepository categoryRepository;
+  final UserRepository userRepository;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -24,6 +31,8 @@ final class HomePage extends StatefulWidget {
 final class _HomePageState extends State<HomePage> {
   late final Future<Result<List<Category>>> _categoriesFuture =
       widget.categoryRepository.getCategories();
+  late final Future<Result<User>> _userFuture =
+      widget.userRepository.getCurrentUser();
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +41,7 @@ final class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _HomeHeader(),
+          _HomeHeader(userFuture: _userFuture),
           const SizedBox(height: AppSpacing.space20),
           const _SearchAction(),
           const SizedBox(height: AppSpacing.space20),
@@ -77,14 +86,23 @@ final class _HomePageState extends State<HomePage> {
 }
 
 final class _HomeHeader extends StatelessWidget {
-  const _HomeHeader();
+  const _HomeHeader({required this.userFuture});
+
+  final Future<Result<User>> userFuture;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
+        FutureBuilder<Result<User>>(
+          future: userFuture,
+          builder: (context, snapshot) {
+            final user = switch (snapshot.data) {
+              Success<User>(:final value) => value,
+              _ => null,
+            };
+            return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -96,7 +114,7 @@ final class _HomeHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.space4),
                 Text(
-                  'Astana, Kazakhstan',
+                  user?.city?.isNotEmpty == true ? user!.city! : '—',
                   style: AppTextStyles.labelSmall.copyWith(
                     color: AppColors.mutedForeground,
                   ),
@@ -105,18 +123,20 @@ final class _HomeHeader extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.space4),
             Text(
-              'Hi, Aigerim 👋',
+              user?.fullName ?? '—',
               style: AppTextStyles.headlineMedium.copyWith(
                 color: AppColors.foreground,
               ),
             ),
           ],
+            );
+          },
         ),
         Row(
-          children: const [
-            _NotificationButton(),
-            SizedBox(width: AppSpacing.space8),
-            _ProfileButton(),
+          children: [
+            const _NotificationButton(),
+            const SizedBox(width: AppSpacing.space8),
+            _ProfileButton(userFuture: userFuture),
           ],
         ),
       ],
@@ -173,7 +193,9 @@ final class _NotificationButton extends StatelessWidget {
 }
 
 final class _ProfileButton extends StatelessWidget {
-  const _ProfileButton();
+  const _ProfileButton({required this.userFuture});
+
+  final Future<Result<User>> userFuture;
 
   @override
   Widget build(BuildContext context) {
@@ -190,18 +212,40 @@ final class _ProfileButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.full),
           ),
           child: Center(
-            child: Text(
-              'AB',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.surface,
-                fontWeight: FontWeight.w700,
-              ),
+            child: FutureBuilder<Result<User>>(
+              future: userFuture,
+              builder: (context, snapshot) {
+                final fullName = switch (snapshot.data) {
+                  Success<User>(:final value) => value.fullName,
+                  _ => null,
+                };
+                return Text(
+                  _initials(fullName),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.surface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                );
+              },
             ),
           ),
         ),
       ),
     );
   }
+}
+
+String _initials(String? fullName) {
+  final parts = fullName
+      ?.trim()
+      .split(RegExp(r'\s+'))
+      .where((part) => part.isNotEmpty)
+      .take(2)
+      .toList();
+  if (parts == null || parts.isEmpty) {
+    return '—';
+  }
+  return parts.map((part) => part[0]).join().toUpperCase();
 }
 
 final class _SearchAction extends StatelessWidget {

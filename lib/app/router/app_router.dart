@@ -138,7 +138,10 @@ final class AppRouter {
                    GoRoute(
                      path: AppRoutes.customerHome,
                      builder: (context, state) =>
-                         HomePage(categoryRepository: categoryRepository),
+                        HomePage(
+                          categoryRepository: categoryRepository,
+                          userRepository: userRepository,
+                        ),
                    ),
                  ],
                ),
