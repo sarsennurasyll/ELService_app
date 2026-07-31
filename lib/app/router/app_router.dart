@@ -192,8 +192,10 @@ final class AppRouter {
                  routes: [
                    GoRoute(
                      path: AppRoutes.technicianDashboard,
-                     builder: (context, state) =>
-                         DashboardPage(userRepository: userRepository),
+                     builder: (context, state) => DashboardPage(
+                       orderRepository: orderRepository,
+                       userRepository: userRepository,
+                     ),
                    ),
                  ],
                ),

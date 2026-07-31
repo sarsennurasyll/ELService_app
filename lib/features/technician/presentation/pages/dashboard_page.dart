@@ -7,12 +7,19 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
+import '../../../customer/domain/models/order.dart';
 import '../../../customer/domain/models/user.dart';
+import '../../../customer/domain/repositories/order_repository.dart';
 import '../../../customer/domain/repositories/user_repository.dart';
 
 final class DashboardPage extends StatefulWidget {
-  const DashboardPage({required this.userRepository, super.key});
+  const DashboardPage({
+    required this.orderRepository,
+    required this.userRepository,
+    super.key,
+  });
 
+  final OrderRepository orderRepository;
   final UserRepository userRepository;
 
   @override
@@ -20,11 +27,15 @@ final class DashboardPage extends StatefulWidget {
 }
 
 final class _DashboardPageState extends State<DashboardPage> {
+  late final Future<Result<List<Order>>> _acceptedOrdersFuture;
+  late final Future<Result<List<Order>>> _incomingOrdersFuture;
   late final Future<Result<User>> _userFuture;
 
   @override
   void initState() {
     super.initState();
+    _acceptedOrdersFuture = widget.orderRepository.getOrders(scope: 'accepted');
+    _incomingOrdersFuture = widget.orderRepository.getOrders(scope: 'incoming');
     _userFuture = widget.userRepository.getCurrentUser();
   }
 
@@ -46,15 +57,11 @@ final class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: AppSpacing.space20),
           const _SectionTitle(title: 'Active Order'),
           const SizedBox(height: AppSpacing.space8),
-          const _ActiveOrderCard(),
+          _ActiveOrderSection(ordersFuture: _acceptedOrdersFuture),
           const SizedBox(height: AppSpacing.space20),
           const _IncomingHeader(),
           const SizedBox(height: AppSpacing.space8),
-          for (final request in _incomingRequests) ...[
-            _IncomingRequestCard(request: request),
-            if (request != _incomingRequests.last)
-              const SizedBox(height: AppSpacing.space8),
-          ],
+          _IncomingRequestsSection(ordersFuture: _incomingOrdersFuture),
           const SizedBox(height: AppSpacing.space20),
           const _QuickActionsRow(),
         ],
@@ -319,8 +326,38 @@ final class _IncomingHeader extends StatelessWidget {
   }
 }
 
+final class _ActiveOrderSection extends StatelessWidget {
+  const _ActiveOrderSection({required this.ordersFuture});
+
+  final Future<Result<List<Order>>> ordersFuture;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Result<List<Order>>>(
+      future: ordersFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const _DashboardLoading();
+        }
+
+        final orders = switch (snapshot.data) {
+          Success<List<Order>>(:final value) => value,
+          _ => const <Order>[],
+        };
+        if (orders.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return _ActiveOrderCard(order: orders.first);
+      },
+    );
+  }
+}
+
 final class _ActiveOrderCard extends StatelessWidget {
-  const _ActiveOrderCard();
+  const _ActiveOrderCard({required this.order});
+
+  final Order order;
 
   @override
   Widget build(BuildContext context) {
@@ -340,7 +377,7 @@ final class _ActiveOrderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Refrigerator · Samsung RB37',
+                      order.description,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.foreground,
                         fontWeight: FontWeight.w700,
@@ -356,7 +393,7 @@ final class _ActiveOrderCard extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.space4),
                         Text(
-                          'Respublika Ave 14',
+                          order.address ?? 'Address not specified',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.mutedForeground,
                           ),
@@ -377,7 +414,7 @@ final class _ActiveOrderCard extends StatelessWidget {
                     vertical: AppSpacing.space4,
                   ),
                   child: Text(
-                    'EN ROUTE',
+                    order.status,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: AppColors.primary,
                     ),
@@ -401,7 +438,7 @@ final class _ActiveOrderCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.space4),
                   Text(
-                    'ETA 12 min',
+                    _orderTime(order),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.mutedForeground,
                     ),
@@ -409,7 +446,7 @@ final class _ActiveOrderCard extends StatelessWidget {
                 ],
               ),
               Text(
-                '18 500 ₸',
+                _orderPrice(order),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.foreground,
                   fontWeight: FontWeight.w700,
@@ -423,10 +460,46 @@ final class _ActiveOrderCard extends StatelessWidget {
   }
 }
 
-final class _IncomingRequestCard extends StatelessWidget {
-  const _IncomingRequestCard({required this.request});
+final class _IncomingRequestsSection extends StatelessWidget {
+  const _IncomingRequestsSection({required this.ordersFuture});
 
-  final _IncomingRequest request;
+  final Future<Result<List<Order>>> ordersFuture;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Result<List<Order>>>(
+      future: ordersFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const _DashboardLoading();
+        }
+
+        final orders = switch (snapshot.data) {
+          Success<List<Order>>(:final value) => value,
+          _ => const <Order>[],
+        };
+        if (orders.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          children: [
+            for (final order in orders) ...[
+              _IncomingRequestCard(order: order),
+              if (order != orders.last)
+                const SizedBox(height: AppSpacing.space8),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+final class _IncomingRequestCard extends StatelessWidget {
+  const _IncomingRequestCard({required this.order});
+
+  final Order order;
 
   @override
   Widget build(BuildContext context) {
@@ -442,7 +515,7 @@ final class _IncomingRequestCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  request.title,
+                  order.description,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.foreground,
                     fontWeight: FontWeight.w600,
@@ -450,7 +523,7 @@ final class _IncomingRequestCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.space4),
                 Text(
-                  '${request.distance} · Est. ${request.price}',
+                  '${order.address ?? 'Address not specified'} · Est. ${_orderPrice(order)}',
                   style: AppTextStyles.labelMedium.copyWith(
                     color: AppColors.mutedForeground,
                     letterSpacing: 0,
@@ -543,27 +616,32 @@ final class _QuickActionCard extends StatelessWidget {
   }
 }
 
-final class _IncomingRequest {
-  const _IncomingRequest({
-    required this.title,
-    required this.distance,
-    required this.price,
-  });
+final class _DashboardLoading extends StatelessWidget {
+  const _DashboardLoading();
 
-  final String title;
-  final String distance;
-  final String price;
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.space20),
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+  }
 }
 
-const _incomingRequests = [
-  _IncomingRequest(
-    title: 'Washer · Bosch WAT28',
-    distance: '1.4 km',
-    price: '16 000 – 22 000 ₸',
-  ),
-  _IncomingRequest(
-    title: 'AC · LG Dualcool',
-    distance: '3.2 km',
-    price: '12 000 – 18 000 ₸',
-  ),
-];
+String _orderPrice(Order order) {
+  final price = order.price;
+  if (price == null) {
+    return '—';
+  }
+  return '${price.toStringAsFixed(0)} ₸';
+}
+
+String _orderTime(Order order) {
+  final preferredDate = order.preferredDate;
+  if (preferredDate == null) {
+    return 'Not scheduled';
+  }
+  return preferredDate.toLocal().toString().substring(0, 16);
+}
