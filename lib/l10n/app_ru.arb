@@ -34,5 +34,6 @@
   "unableToLoadOrders": "Не удалось загрузить заказы",
   "noActiveOrders": "Нет активных заказов",
   "noPastOrders": "Нет завершённых заказов",
-  "ordersWillAppearHere": "Новые заказы появятся здесь."
+  "ordersWillAppearHere": "Новые заказы появятся здесь.",
+  "acceptTermsToContinue": "Примите условия и политику конфиденциальности, чтобы продолжить."
 }

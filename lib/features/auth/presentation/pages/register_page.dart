@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
@@ -52,6 +53,14 @@ final class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _register() async {
     FocusScope.of(context).unfocus();
+    if (!_hasAcceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.acceptTermsToContinue),
+        ),
+      );
+      return;
+    }
     setState(() => _isSubmitting = true);
 
     final result = await widget.authRepository.register(

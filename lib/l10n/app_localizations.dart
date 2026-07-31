@@ -309,6 +309,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New orders will appear here.'**
   String get ordersWillAppearHere;
+
+  /// No description provided for @acceptTermsToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept the terms and privacy policy to continue.'**
+  String get acceptTermsToContinue;
 }
 
 class _AppLocalizationsDelegate

@@ -112,4 +112,8 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get ordersWillAppearHere => 'Новые заказы появятся здесь.';
+
+  @override
+  String get acceptTermsToContinue =>
+      'Примите условия и политику конфиденциальности, чтобы продолжить.';
 }

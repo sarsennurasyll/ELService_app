@@ -112,4 +112,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ordersWillAppearHere => 'New orders will appear here.';
+
+  @override
+  String get acceptTermsToContinue =>
+      'Accept the terms and privacy policy to continue.';
 }

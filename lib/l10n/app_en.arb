@@ -34,5 +34,6 @@
   "unableToLoadOrders": "Unable to load orders",
   "noActiveOrders": "No active orders",
   "noPastOrders": "No past orders",
-  "ordersWillAppearHere": "New orders will appear here."
+  "ordersWillAppearHere": "New orders will appear here.",
+  "acceptTermsToContinue": "Accept the terms and privacy policy to continue."
 }

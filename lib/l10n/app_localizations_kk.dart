@@ -112,4 +112,8 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get ordersWillAppearHere => 'Жаңа тапсырыстар осы жерде пайда болады.';
+
+  @override
+  String get acceptTermsToContinue =>
+      'Жалғастыру үшін шарттар мен құпиялылық саясатын қабылдаңыз.';
 }
