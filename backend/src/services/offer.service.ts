@@ -52,6 +52,9 @@ export class OfferService {
     const offer = await this.offerRepository.findById(offerId);
     if (!offer) throw new AppError(404, 'Offer not found', 'OFFER_NOT_FOUND');
     if (user.role !== 'ADMIN' && user.sub !== offer.masterId) throw new AppError(403, 'Forbidden', 'FORBIDDEN');
+    if (offer.status !== 'ACTIVE') {
+      throw new AppError(409, 'Offer cannot be deleted', 'OFFER_UNAVAILABLE');
+    }
     await this.offerRepository.delete(offerId);
   }
 }
