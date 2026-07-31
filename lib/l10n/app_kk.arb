@@ -30,5 +30,9 @@
   ,"orderDetails": "Тапсырыс мәліметтері"
   ,"technicianOffers": "Маман ұсыныстары"
   ,"sendOffer": "Ұсыныс жіберу"
-  ,"rateTechnician": "Маманды бағалау"
+  ,"rateTechnician": "Маманды бағалау",
+  "unableToLoadOrders": "Тапсырыстарды жүктеу мүмкін болмады",
+  "noActiveOrders": "Белсенді тапсырыстар жоқ",
+  "noPastOrders": "Аяқталған тапсырыстар жоқ",
+  "ordersWillAppearHere": "Жаңа тапсырыстар осы жерде пайда болады."
 }

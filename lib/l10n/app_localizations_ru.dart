@@ -100,4 +100,16 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get rateTechnician => 'Оценить мастера';
+
+  @override
+  String get unableToLoadOrders => 'Не удалось загрузить заказы';
+
+  @override
+  String get noActiveOrders => 'Нет активных заказов';
+
+  @override
+  String get noPastOrders => 'Нет завершённых заказов';
+
+  @override
+  String get ordersWillAppearHere => 'Новые заказы появятся здесь.';
 }

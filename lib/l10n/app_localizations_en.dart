@@ -100,4 +100,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rateTechnician => 'Rate technician';
+
+  @override
+  String get unableToLoadOrders => 'Unable to load orders';
+
+  @override
+  String get noActiveOrders => 'No active orders';
+
+  @override
+  String get noPastOrders => 'No past orders';
+
+  @override
+  String get ordersWillAppearHere => 'New orders will appear here.';
 }

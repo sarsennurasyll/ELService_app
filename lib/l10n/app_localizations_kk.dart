@@ -100,4 +100,16 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get rateTechnician => 'Маманды бағалау';
+
+  @override
+  String get unableToLoadOrders => 'Тапсырыстарды жүктеу мүмкін болмады';
+
+  @override
+  String get noActiveOrders => 'Белсенді тапсырыстар жоқ';
+
+  @override
+  String get noPastOrders => 'Аяқталған тапсырыстар жоқ';
+
+  @override
+  String get ordersWillAppearHere => 'Жаңа тапсырыстар осы жерде пайда болады.';
 }

@@ -285,6 +285,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rate technician'**
   String get rateTechnician;
+
+  /// No description provided for @unableToLoadOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load orders'**
+  String get unableToLoadOrders;
+
+  /// No description provided for @noActiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No active orders'**
+  String get noActiveOrders;
+
+  /// No description provided for @noPastOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No past orders'**
+  String get noPastOrders;
+
+  /// No description provided for @ordersWillAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'New orders will appear here.'**
+  String get ordersWillAppearHere;
 }
 
 class _AppLocalizationsDelegate

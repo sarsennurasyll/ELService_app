@@ -30,5 +30,9 @@
   ,"orderDetails": "Детали заказа"
   ,"technicianOffers": "Предложения мастеров"
   ,"sendOffer": "Отправить предложение"
-  ,"rateTechnician": "Оценить мастера"
+  ,"rateTechnician": "Оценить мастера",
+  "unableToLoadOrders": "Не удалось загрузить заказы",
+  "noActiveOrders": "Нет активных заказов",
+  "noPastOrders": "Нет завершённых заказов",
+  "ordersWillAppearHere": "Новые заказы появятся здесь."
 }

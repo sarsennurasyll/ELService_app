@@ -30,5 +30,9 @@
   ,"orderDetails": "Order details"
   ,"technicianOffers": "Technician Offers"
   ,"sendOffer": "Send offer"
-  ,"rateTechnician": "Rate technician"
+  ,"rateTechnician": "Rate technician",
+  "unableToLoadOrders": "Unable to load orders",
+  "noActiveOrders": "No active orders",
+  "noPastOrders": "No past orders",
+  "ordersWillAppearHere": "New orders will appear here."
 }
