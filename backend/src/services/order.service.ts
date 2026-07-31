@@ -78,6 +78,9 @@ export class OrderService {
   async updateOrder(user: JwtPayload, id: string, input: UpdateOrderInput) {
     const order = await this.getOrderForAction(id);
     this.assertCanUpdateOrder(user, order);
+    if (input.status && user.role !== 'ADMIN') {
+      throw new AppError(403, 'Forbidden', 'FORBIDDEN');
+    }
     if (input.status) {
       this.assertStatusTransition(order.status, input.status);
     }
