@@ -5,7 +5,7 @@ export const RegisterSchema = z.object({
   email: z.string().trim().email('Invalid email'),
   phone: z.string().trim().min(8, 'Invalid phone'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['CUSTOMER', 'TECHNICIAN', 'ADMIN']).default('CUSTOMER'),
+  role: z.enum(['CUSTOMER', 'TECHNICIAN']).default('CUSTOMER'),
 });
 
 export const LoginSchema = z.object({
