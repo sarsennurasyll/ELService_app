@@ -116,6 +116,9 @@ export class OrderService {
     ) {
       throw new AppError(403, 'Forbidden', 'FORBIDDEN');
     }
+    if (order.status !== 'PENDING' || order.assignedMasterId) {
+      throw new AppError(409, 'Order cannot be deleted', 'ORDER_UNAVAILABLE');
+    }
     await this.orderRepository.delete(id);
   }
 
