@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client';
+
 import { OrderRepository } from '../repositories/order.repository';
 import { ReviewRepository } from '../repositories/review.repository';
 import type { JwtPayload } from '../types/auth.types';
@@ -34,13 +36,23 @@ export class ReviewService {
       throw new AppError(409, 'Review already exists', 'REVIEW_ALREADY_EXISTS');
     }
 
-    return this.reviewRepository.create({
-      orderId: order.id,
-      customerId: order.customerId,
-      technicianId: order.assignedMasterId,
-      rating: input.rating,
-      comment: input.comment,
-    });
+    try {
+      return await this.reviewRepository.create({
+        orderId: order.id,
+        customerId: order.customerId,
+        technicianId: order.assignedMasterId,
+        rating: input.rating,
+        comment: input.comment,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new AppError(409, 'Review already exists', 'REVIEW_ALREADY_EXISTS');
+      }
+      throw error;
+    }
   }
 
   getMasterReviews(masterId: string) {
