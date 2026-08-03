@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
 import '../../../../shared/widgets/layout/app_top_bar.dart';
@@ -61,9 +62,9 @@ final class _ReviewPageState extends State<ReviewPage> {
       case Success<Review>():
         context.pop();
       case ErrorResult<Review>():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.failure.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result.failure.message)));
     }
   }
 
@@ -71,7 +72,7 @@ final class _ReviewPageState extends State<ReviewPage> {
   Widget build(BuildContext context) {
     return Screen(
       appBar: AppTopBar(
-        title: 'Rate technician',
+        title: AppLocalizations.of(context)!.rateTechnician,
         subtitle: widget.orderId,
         onBack: () => context.pop(),
       ),
@@ -109,13 +110,13 @@ final class _ReviewPageState extends State<ReviewPage> {
           const SizedBox(height: AppSpacing.space24),
           AppTextField(
             controller: _commentController,
-            label: 'COMMENT',
-            hint: 'Describe your experience',
+            label: AppLocalizations.of(context)!.comment,
+            hint: AppLocalizations.of(context)!.describeYourExperience,
             isMultiline: true,
           ),
           const Spacer(),
           PrimaryButton(
-            label: 'Send review',
+            label: AppLocalizations.of(context)!.sendReview,
             isLoading: _isSubmitting,
             onPressed: _submitReview,
           ),

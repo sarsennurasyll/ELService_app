@@ -7,6 +7,7 @@ import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
@@ -76,7 +77,7 @@ final class _ProfilePageState extends State<ProfilePage> {
           );
         }
 
-        return const Center(child: Text('Не удалось загрузить профиль'));
+        return Center(child: Text(AppLocalizations.of(context)!.error));
       },
     );
   }
@@ -319,18 +320,30 @@ final class _EditProfileDialogState extends State<_EditProfileDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Edit profile'),
+      title: Text(AppLocalizations.of(context)!.editProfile),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppTextField(controller: _fullNameController, label: 'FULL NAME'),
+            AppTextField(
+              controller: _fullNameController,
+              label: AppLocalizations.of(context)!.fullName,
+            ),
             const SizedBox(height: AppSpacing.space12),
-            AppTextField(controller: _phoneController, label: 'PHONE'),
+            AppTextField(
+              controller: _phoneController,
+              label: AppLocalizations.of(context)!.phone,
+            ),
             const SizedBox(height: AppSpacing.space12),
-            AppTextField(controller: _avatarController, label: 'AVATAR URL'),
+            AppTextField(
+              controller: _avatarController,
+              label: AppLocalizations.of(context)!.avatarUrl,
+            ),
             const SizedBox(height: AppSpacing.space12),
-            AppTextField(controller: _cityController, label: 'CITY'),
+            AppTextField(
+              controller: _cityController,
+              label: AppLocalizations.of(context)!.city,
+            ),
             if (_errorMessage case final errorMessage?) ...[
               const SizedBox(height: AppSpacing.space12),
               Text(
@@ -344,12 +357,12 @@ final class _EditProfileDialogState extends State<_EditProfileDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         SizedBox(
           width: AppSpacing.space96,
           child: PrimaryButton(
-            label: 'Save',
+            label: AppLocalizations.of(context)!.save,
             onPressed: _save,
             isLoading: _isSaving,
           ),

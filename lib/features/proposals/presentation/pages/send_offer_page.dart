@@ -1,3 +1,123 @@
-import 'package:flutter/material.dart'; import 'package:go_router/go_router.dart'; import '../../../../app/theme/app_spacing.dart'; import '../../../../core/utils/result.dart'; import '../../../../shared/widgets/buttons/primary_button.dart'; import '../../../../shared/widgets/inputs/app_text_field.dart'; import '../../../../shared/widgets/layout/app_top_bar.dart'; import '../../../../shared/widgets/layout/screen.dart'; import '../../domain/models/offer.dart'; import '../../domain/repositories/offer_repository.dart';
-final class SendOfferPage extends StatefulWidget { const SendOfferPage({required this.orderId,required this.repository,super.key}); final String orderId; final OfferRepository repository; @override State<SendOfferPage> createState()=>_SendOfferPageState(); }
-final class _SendOfferPageState extends State<SendOfferPage>{late final TextEditingController _price=TextEditingController();late final TextEditingController _arrival=TextEditingController(text:'30 min');late final TextEditingController _comment=TextEditingController();String? _priceError;var _loading=false; @override void dispose(){_price.dispose();_arrival.dispose();_comment.dispose();super.dispose();} @override Widget build(BuildContext context)=>Screen(appBar:AppTopBar(title:'Send offer',onBack:()=>context.pop()),child:Column(children:[AppTextField(controller:_price,label:'YOUR QUOTE',errorText:_priceError,keyboardType:const TextInputType.numberWithOptions(decimal:true),onChanged:(_){if(_priceError!=null)setState(()=>_priceError=null);}),const SizedBox(height:AppSpacing.space16),AppTextField(controller:_arrival,label:'ARRIVAL WINDOW'),const SizedBox(height:AppSpacing.space16),AppTextField(controller:_comment,label:'MESSAGE',isMultiline:true),const Spacer(),PrimaryButton(label:'Send offer',isLoading:_loading,onPressed:_send)])); Future<void> _send() async {final price=_validatedPrice();if(price==null)return;setState(()=>_loading=true);final result=await widget.repository.createOffer(Offer(id:'',orderId:widget.orderId,masterId:'',price:price,arrivalTime:_arrival.text.trim(),status:'ACTIVE',comment:_comment.text.trim().isEmpty?null:_comment.text.trim()));if(!mounted)return;setState(()=>_loading=false);if(result is ErrorResult<Offer>){ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(result.failure.message)));return;}context.pop();} double? _validatedPrice(){final value=_price.text.trim();final price=double.tryParse(value);final error=value.isEmpty?'Введите цену':price==null||!price.isFinite||price<=0?'Введите положительное число':null;if(error!=null){setState(()=>_priceError=error);return null;}return price;}}
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/theme/app_spacing.dart';
+import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../../shared/widgets/inputs/app_text_field.dart';
+import '../../../../shared/widgets/layout/app_top_bar.dart';
+import '../../../../shared/widgets/layout/screen.dart';
+import '../../domain/models/offer.dart';
+import '../../domain/repositories/offer_repository.dart';
+
+final class SendOfferPage extends StatefulWidget {
+  const SendOfferPage({
+    required this.orderId,
+    required this.repository,
+    super.key,
+  });
+  final String orderId;
+  final OfferRepository repository;
+  @override
+  State<SendOfferPage> createState() => _SendOfferPageState();
+}
+
+final class _SendOfferPageState extends State<SendOfferPage> {
+  late final TextEditingController _price = TextEditingController();
+  late final TextEditingController _arrival = TextEditingController(
+    text: '30 min',
+  );
+  late final TextEditingController _comment = TextEditingController();
+  String? _priceError;
+  var _loading = false;
+  @override
+  void dispose() {
+    _price.dispose();
+    _arrival.dispose();
+    _comment.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    return Screen(
+      appBar: AppTopBar(
+        title: localizations.sendOffer,
+        onBack: () => context.pop(),
+      ),
+      child: Column(
+        children: [
+          AppTextField(
+            controller: _price,
+            label: localizations.sendOfferPrice,
+            errorText: _priceError,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (_) {
+              if (_priceError != null) setState(() => _priceError = null);
+            },
+          ),
+          const SizedBox(height: AppSpacing.space16),
+          AppTextField(
+            controller: _arrival,
+            label: localizations.arrivalWindow,
+          ),
+          const SizedBox(height: AppSpacing.space16),
+          AppTextField(
+            controller: _comment,
+            label: localizations.message,
+            isMultiline: true,
+          ),
+          const Spacer(),
+          PrimaryButton(
+            label: localizations.sendOffer,
+            isLoading: _loading,
+            onPressed: _send,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _send() async {
+    final price = _validatedPrice();
+    if (price == null) return;
+    setState(() => _loading = true);
+    final result = await widget.repository.createOffer(
+      Offer(
+        id: '',
+        orderId: widget.orderId,
+        masterId: '',
+        price: price,
+        arrivalTime: _arrival.text.trim(),
+        status: 'ACTIVE',
+        comment: _comment.text.trim().isEmpty ? null : _comment.text.trim(),
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (result is ErrorResult<Offer>) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.failure.message)));
+      return;
+    }
+    context.pop();
+  }
+
+  double? _validatedPrice() {
+    final value = _price.text.trim();
+    final price = double.tryParse(value);
+    final localizations = AppLocalizations.of(context)!;
+    final error = value.isEmpty
+        ? localizations.enterPrice
+        : price == null || !price.isFinite || price <= 0
+        ? localizations.enterPositiveNumber
+        : null;
+    if (error != null) {
+      setState(() => _priceError = error);
+      return null;
+    }
+    return price;
+  }
+}

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/layout/app_top_bar.dart';
 import '../../../../shared/widgets/layout/screen.dart';
 import '../../domain/models/message.dart';
@@ -101,8 +102,9 @@ final class _ChatMessagesPageState extends State<ChatMessagesPage> {
 
     switch (result) {
       case Success<List<Message>>(:final value):
-        final messages = [...value]
-          ..sort((first, second) => first.createdAt.compareTo(second.createdAt));
+        final messages = [
+          ...value,
+        ]..sort((first, second) => first.createdAt.compareTo(second.createdAt));
         setState(() {
           _messages = messages;
           _errorMessage = null;
@@ -114,7 +116,7 @@ final class _ChatMessagesPageState extends State<ChatMessagesPage> {
       case ErrorResult<List<Message>>(:final failure):
         setState(() {
           _errorMessage = failure.statusCode == null
-              ? 'Нет подключения к интернету'
+              ? AppLocalizations.of(context)!.noInternetConnection
               : failure.message;
           _isFetching = false;
         });
@@ -149,7 +151,10 @@ final class _ChatMessagesPageState extends State<ChatMessagesPage> {
 
     return Screen(
       padding: EdgeInsets.zero,
-      appBar: AppTopBar(title: 'Chat', onBack: () => context.pop()),
+      appBar: AppTopBar(
+        title: AppLocalizations.of(context)!.chat,
+        onBack: () => context.pop(),
+      ),
       child: Column(
         children: [
           Expanded(
@@ -157,14 +162,14 @@ final class _ChatMessagesPageState extends State<ChatMessagesPage> {
               (null, null) => const ChatStateView.loading(),
               (_, final errorMessage?) when messages == null => ChatStateView(
                 icon: Icons.wifi_off_outlined,
-                title: 'Не удалось загрузить сообщения',
+                title: AppLocalizations.of(context)!.unableToLoadMessages,
                 message: errorMessage,
                 onRetry: _refreshMessages,
               ),
-              (final values?, _) when values.isEmpty => const ChatStateView(
+              (final values?, _) when values.isEmpty => ChatStateView(
                 icon: Icons.forum_outlined,
-                title: 'Сообщений пока нет',
-                message: 'Начните диалог — собеседник увидит сообщение сразу.',
+                title: AppLocalizations.of(context)!.noMessagesYet,
+                message: AppLocalizations.of(context)!.messagesEmptyDescription,
               ),
               (final values?, _) => _MessagesList(
                 controller: _scrollController,
@@ -246,9 +251,9 @@ final class _ChatMessagesPageState extends State<ChatMessagesPage> {
               .toList();
           _isSending = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.message)));
     }
   }
 }
@@ -280,16 +285,20 @@ final class _MessagesList extends StatelessWidget {
         final message = messages[index];
         final previous = index == 0 ? null : messages[index - 1];
         final next = index == messages.length - 1 ? null : messages[index + 1];
-        final isMine = message.senderId == currentUserId ||
+        final isMine =
+            message.senderId == currentUserId ||
             message.deliveryStatus == MessageDeliveryStatus.sending;
-        final isSameDay = previous != null &&
+        final isSameDay =
+            previous != null &&
             previous.createdAt.year == message.createdAt.year &&
             previous.createdAt.month == message.createdAt.month &&
             previous.createdAt.day == message.createdAt.day;
-        final isGroupedWithPrevious = previous != null &&
+        final isGroupedWithPrevious =
+            previous != null &&
             previous.senderId == message.senderId &&
             isSameDay;
-        final isGroupedWithNext = next != null &&
+        final isGroupedWithNext =
+            next != null &&
             next.senderId == message.senderId &&
             next.createdAt.year == message.createdAt.year &&
             next.createdAt.month == message.createdAt.month &&

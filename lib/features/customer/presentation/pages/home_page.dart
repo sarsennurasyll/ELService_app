@@ -8,6 +8,7 @@ import '../../../../app/theme/app_shadows.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../domain/models/category.dart';
 import '../../domain/models/user.dart';
@@ -59,7 +60,10 @@ final class _HomePageState extends State<HomePage> {
             const SizedBox(height: AppSpacing.space20),
             const _SearchAction(),
             const SizedBox(height: AppSpacing.space20),
-            const _SectionHeader(title: 'Categories', actionLabel: 'See all'),
+            _SectionHeader(
+              title: AppLocalizations.of(context)!.categories,
+              actionLabel: AppLocalizations.of(context)!.seeAll,
+            ),
             const SizedBox(height: AppSpacing.space12),
             FutureBuilder<Result<List<Category>>>(
               future: _categoriesFuture,
@@ -87,9 +91,9 @@ final class _HomePageState extends State<HomePage> {
             const SizedBox(height: AppSpacing.space20),
             const _EmergencyBanner(),
             const SizedBox(height: AppSpacing.space20),
-            const _SectionHeader(
-              title: 'Top Rated Near You',
-              actionLabel: 'See all',
+            _SectionHeader(
+              title: AppLocalizations.of(context)!.topRatedNearYou,
+              actionLabel: AppLocalizations.of(context)!.seeAll,
             ),
             const SizedBox(height: AppSpacing.space12),
             const _TechniciansList(),

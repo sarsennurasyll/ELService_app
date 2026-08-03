@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +10,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/layout/app_top_bar.dart';
@@ -100,9 +101,9 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
       case Success<Order>():
         _reloadOrder();
       case ErrorResult<Order>():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.failure.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result.failure.message)));
     }
   }
 
@@ -117,9 +118,9 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
       case Success():
         await context.push(AppRoutes.chatMessages(result.value.id));
       case ErrorResult():
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.failure.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result.failure.message)));
     }
   }
 
@@ -138,7 +139,7 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
     return Screen(
       padding: EdgeInsets.zero,
       appBar: AppTopBar(
-        title: 'Order details',
+        title: AppLocalizations.of(context)!.orderDetails,
         subtitle: widget.orderId,
         onBack: () => context.pop(),
       ),
@@ -172,24 +173,20 @@ final class _OrderDetailsPageState extends State<OrderDetailsPage> {
               order: _OrderDetails.fromOrder(result.value),
               session: state?.session,
               runningAction: _runningAction,
-              onStart: () => _runAction(
-                'start',
-                widget.orderRepository.startOrder,
-              ),
-              onComplete: () => _runAction(
-                'complete',
-                widget.orderRepository.completeOrder,
-              ),
-              onCancel: () => _runAction(
-                'cancel',
-                widget.orderRepository.cancelOrder,
-              ),
+              onStart: () =>
+                  _runAction('start', widget.orderRepository.startOrder),
+              onComplete: () =>
+                  _runAction('complete', widget.orderRepository.completeOrder),
+              onCancel: () =>
+                  _runAction('cancel', widget.orderRepository.cancelOrder),
               onOpenOffers: () => _openOffers(result.value.id),
               onOpenChat: () => _openChat(result.value.id),
             );
           }
 
-          return const Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°РєР°Р·'));
+          return const Center(
+            child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°РєР°Р·'),
+          );
         },
       ),
     );
@@ -285,7 +282,7 @@ final class _OrderActions extends StatelessWidget {
   Widget build(BuildContext context) {
     if (order.isCompleted) {
       return PrimaryButton(
-        label: 'Rate technician',
+        label: AppLocalizations.of(context)!.rateTechnician,
         onPressed: _canReview(order, session)
             ? () => context.push(AppRoutes.review(order.id))
             : null,
@@ -296,7 +293,7 @@ final class _OrderActions extends StatelessWidget {
       if (_canViewOffers(order, session)) ...[
         Expanded(
           child: PrimaryButton(
-            label: 'Offers',
+            label: AppLocalizations.of(context)!.technicianOffers,
             variant: PrimaryButtonVariant.outline,
             onPressed: onOpenOffers,
           ),
@@ -305,7 +302,7 @@ final class _OrderActions extends StatelessWidget {
       ],
       Expanded(
         child: PrimaryButton(
-          label: 'Chat',
+          label: AppLocalizations.of(context)!.chat,
           variant: PrimaryButtonVariant.outline,
           onPressed: _canOpenChat(order, session) ? onOpenChat : null,
         ),
@@ -318,7 +315,7 @@ final class _OrderActions extends StatelessWidget {
         ..add(
           Expanded(
             child: PrimaryButton(
-              label: 'Cancel',
+              label: AppLocalizations.of(context)!.cancelOrder,
               variant: PrimaryButtonVariant.outline,
               isLoading: runningAction == 'cancel',
               onPressed: onCancel,
@@ -333,7 +330,7 @@ final class _OrderActions extends StatelessWidget {
         ..add(
           Expanded(
             child: PrimaryButton(
-              label: 'Start',
+              label: AppLocalizations.of(context)!.startOrder,
               isLoading: runningAction == 'start',
               onPressed: onStart,
             ),
@@ -347,7 +344,7 @@ final class _OrderActions extends StatelessWidget {
         ..add(
           Expanded(
             child: PrimaryButton(
-              label: 'Complete',
+              label: AppLocalizations.of(context)!.completeOrder,
               isLoading: runningAction == 'complete',
               onPressed: onComplete,
             ),
@@ -415,7 +412,7 @@ final class _StatusBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'STATUS',
+                    AppLocalizations.of(context)!.status,
                     style: AppTextStyles.labelMedium.copyWith(color: color),
                   ),
                   const SizedBox(height: AppSpacing.space4),
@@ -492,13 +489,13 @@ final class _OrderInfoCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.space12),
           _InfoRow(
             icon: Icons.location_on_outlined,
-            label: 'Address',
+            label: AppLocalizations.of(context)!.address,
             value: order.address,
           ),
           const SizedBox(height: AppSpacing.space12),
           _InfoRow(
             icon: Icons.schedule_outlined,
-            label: 'Scheduled',
+            label: AppLocalizations.of(context)!.scheduled,
             value: order.schedule,
           ),
         ],
@@ -562,7 +559,7 @@ final class _DescriptionSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'DESCRIPTION',
+          AppLocalizations.of(context)!.description,
           style: AppTextStyles.labelMedium.copyWith(
             color: AppColors.mutedForeground,
           ),
@@ -590,7 +587,7 @@ final class _PhotosSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'ATTACHED PHOTOS',
+          AppLocalizations.of(context)!.attachedPhotos,
           style: AppTextStyles.labelMedium.copyWith(
             color: AppColors.mutedForeground,
           ),
@@ -669,7 +666,9 @@ final class _CostCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isEstimate ? 'ESTIMATED PRICE' : 'ORDER TOTAL',
+              isEstimate
+                  ? AppLocalizations.of(context)!.estimatedPrice
+                  : AppLocalizations.of(context)!.orderTotal,
               style: AppTextStyles.labelMedium.copyWith(
                 color: AppColors.primary,
               ),
@@ -684,7 +683,7 @@ final class _CostCard extends StatelessWidget {
             if (isEstimate) ...[
               const SizedBox(height: AppSpacing.space4),
               Text(
-                "Final price set by the technician's offer",
+                AppLocalizations.of(context)!.finalPriceSetByOffer,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.mutedForeground,
                 ),
@@ -761,7 +760,9 @@ final class _OrderDetails {
           : preferredDate.toLocal().toString().substring(0, 16),
       status: _orderStatusFromValue(order.status),
       statusValue: order.status,
-      price: order.price == null ? 'вЂ”' : '${order.price!.toStringAsFixed(0)} в‚ё',
+      price: order.price == null
+          ? 'вЂ”'
+          : '${order.price!.toStringAsFixed(0)} в‚ё',
       isEstimate: order.price == null,
       isCompleted: order.status == 'COMPLETED',
       customerId: order.customerId,
@@ -771,10 +772,7 @@ final class _OrderDetails {
 }
 
 final class _OrderDetailsLoadState {
-  const _OrderDetailsLoadState({
-    required this.result,
-    required this.session,
-  });
+  const _OrderDetailsLoadState({required this.result, required this.session});
 
   final Result<Order> result;
   final _CurrentSession? session;
@@ -837,4 +835,3 @@ bool _canReview(_OrderDetails order, _CurrentSession? session) {
       order.statusValue == 'COMPLETED' &&
       order.assignedMasterId != null;
 }
-

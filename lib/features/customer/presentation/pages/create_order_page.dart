@@ -11,6 +11,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../../shared/widgets/inputs/app_text_field.dart';
@@ -47,8 +48,9 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
   var _selectedTimeIndex = 1;
   var _photoCount = 2;
   var _isSubmitting = false;
-  late final Future<Result<List<Category>>> _categoriesFuture =
-      widget.categoryRepository.getCategories();
+  late final Future<Result<List<Category>>> _categoriesFuture = widget
+      .categoryRepository
+      .getCategories();
 
   @override
   void initState() {
@@ -74,8 +76,8 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
     return Screen(
       padding: EdgeInsets.zero,
       appBar: AppTopBar(
-        title: 'New Repair Request',
-        subtitle: 'Fill in details step by step',
+        title: AppLocalizations.of(context)!.newRepairRequest,
+        subtitle: AppLocalizations.of(context)!.newRepairRequestSubtitle,
         onBack: () => context.pop(),
       ),
       child: Column(
@@ -102,13 +104,17 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
 
                     final result = snapshot.data;
                     if (result is ErrorResult<List<Category>>) {
-                      return _CategoryLoadError(message: result.failure.message);
+                      return _CategoryLoadError(
+                        message: result.failure.message,
+                      );
                     }
                     if (result is Success<List<Category>>) {
                       final categories = result.value.take(4).toList();
                       if (categories.isEmpty) {
-                        return const _CategoryLoadError(
-                          message: 'Категории пока не добавлены',
+                        return _CategoryLoadError(
+                          message: AppLocalizations.of(
+                            context,
+                          )!.categoriesNotAdded,
                         );
                       }
                       return _CategorySection(
@@ -120,14 +126,16 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
                       );
                     }
 
-                    return const _CategoryLoadError(
-                      message: 'Не удалось загрузить категории',
+                    return _CategoryLoadError(
+                      message: AppLocalizations.of(
+                        context,
+                      )!.unableToLoadCategories,
                     );
                   },
                 ),
                 const SizedBox(height: AppSpacing.space16),
                 Text(
-                  'DESCRIBE THE PROBLEM',
+                  AppLocalizations.of(context)!.describeProblem,
                   style: AppTextStyles.labelMedium.copyWith(
                     color: AppColors.mutedForeground,
                   ),
@@ -161,7 +169,7 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
                 const SizedBox(height: AppSpacing.space16),
                 AppTextField(
                   controller: _addressController,
-                  label: 'ADDRESS',
+                  label: AppLocalizations.of(context)!.address,
                   prefixIcon: const Icon(
                     Icons.location_on_outlined,
                     color: AppColors.primary,
@@ -190,7 +198,7 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.space20),
               child: PrimaryButton(
-                label: 'Submit request',
+                label: AppLocalizations.of(context)!.submitRequest,
                 onPressed: _submitOrder,
                 isLoading: _isSubmitting,
               ),
@@ -203,20 +211,26 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
 
   Future<void> _submitOrder() async {
     final categoriesResult = await _categoriesFuture;
+    if (!mounted) {
+      return;
+    }
     if (categoriesResult is! Success<List<Category>>) {
-      _showError('Не удалось загрузить категории');
+      _showError(AppLocalizations.of(context)!.unableToLoadCategories);
       return;
     }
 
     final categories = categoriesResult.value.take(4).toList();
     if (_selectedCategoryIndex >= categories.length) {
-      _showError('Выберите категорию');
+      _showError(AppLocalizations.of(context)!.chooseCategory);
       return;
     }
 
     final customerId = await _currentCustomerId();
+    if (!mounted) {
+      return;
+    }
     if (customerId == null) {
-      _showError('Не удалось определить пользователя');
+      _showError(AppLocalizations.of(context)!.unableToIdentifyUser);
       return;
     }
 
@@ -268,7 +282,9 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   List<_TimeSlot> _buildTimeSlots(DateTime now) {
@@ -289,7 +305,8 @@ final class _CreateOrderPageState extends State<CreateOrderPage> {
         date: today.add(const Duration(days: 1, hours: 16)),
       ),
       _TimeSlot(
-        label: '${_weekdayLabel(thirdDay.weekday)} ${thirdDay.day} · 10:00 – 12:00',
+        label:
+            '${_weekdayLabel(thirdDay.weekday)} ${thirdDay.day} · 10:00 – 12:00',
         date: thirdDay,
       ),
     ];
@@ -361,7 +378,7 @@ final class _CategorySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'APPLIANCE',
+          AppLocalizations.of(context)!.appliance,
           style: AppTextStyles.labelMedium.copyWith(
             color: AppColors.mutedForeground,
           ),
@@ -410,7 +427,7 @@ final class _CategorySection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'MODEL',
+                      AppLocalizations.of(context)!.model,
                       style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.mutedForeground,
                       ),
@@ -509,7 +526,7 @@ final class _PhotosSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'PHOTOS (OPTIONAL)',
+              AppLocalizations.of(context)!.photosOptional,
               style: AppTextStyles.labelMedium.copyWith(
                 color: AppColors.mutedForeground,
               ),
@@ -517,7 +534,7 @@ final class _PhotosSection extends StatelessWidget {
             GestureDetector(
               onTap: onManage,
               child: Text(
-                'Manage',
+                AppLocalizations.of(context)!.manage,
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
@@ -537,7 +554,9 @@ final class _PhotosSection extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: [
                     AppColors.primary20,
-                    AppColors.secondary.withValues(alpha: AppColors.primary20.a),
+                    AppColors.secondary.withValues(
+                      alpha: AppColors.primary20.a,
+                    ),
                   ],
                 ),
                 child: photoCount > 0

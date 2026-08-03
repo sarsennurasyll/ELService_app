@@ -10,6 +10,7 @@ import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../features/customer/domain/models/order.dart';
 import '../../../../features/customer/domain/repositories/order_repository.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 
@@ -166,7 +167,7 @@ final class _OrdersHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Orders',
+              AppLocalizations.of(context)!.orders,
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.foreground,
               ),
@@ -182,17 +183,18 @@ final class _OrdersHeader extends StatelessWidget {
                 child: Row(
                   children: [
                     _OrdersTabButton(
-                      label: 'NEW ($incomingCount)',
+                      label:
+                          '${AppLocalizations.of(context)!.newOrders} ($incomingCount)',
                       isSelected: selectedTab == _OrdersTab.incoming,
                       onTap: () => onTabSelected(_OrdersTab.incoming),
                     ),
                     _OrdersTabButton(
-                      label: 'ACCEPTED',
+                      label: AppLocalizations.of(context)!.accepted,
                       isSelected: selectedTab == _OrdersTab.accepted,
                       onTap: () => onTabSelected(_OrdersTab.accepted),
                     ),
                     _OrdersTabButton(
-                      label: 'DONE',
+                      label: AppLocalizations.of(context)!.done,
                       isSelected: selectedTab == _OrdersTab.completed,
                       onTap: () => onTabSelected(_OrdersTab.completed),
                     ),
@@ -296,7 +298,8 @@ final class _OrderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.space4),
                     Text(
-                      order.address ?? 'Address not specified',
+                      order.address ??
+                          AppLocalizations.of(context)!.addressNotSpecified,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.mutedForeground,
                       ),
@@ -307,7 +310,7 @@ final class _OrderCard extends StatelessWidget {
                 ),
               ),
               Text(
-                _orderTime(order),
+                _orderTime(context, order),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: AppColors.mutedForeground,
                   letterSpacing: 0,
@@ -324,7 +327,7 @@ final class _OrderCard extends StatelessWidget {
                 SizedBox(
                   width: AppSpacing.space96,
                   child: PrimaryButton(
-                    label: 'Offer',
+                    label: AppLocalizations.of(context)!.sendOffer,
                     onPressed: () =>
                         context.push(AppRoutes.sendOffer(order.id)),
                   ),
@@ -385,7 +388,7 @@ final class _OrdersError extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.space16),
             PrimaryButton(
-              label: 'Retry',
+              label: AppLocalizations.of(context)!.retry,
               variant: PrimaryButtonVariant.outline,
               onPressed: onRetry,
             ),
@@ -424,7 +427,7 @@ final class _EmptyOrders extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.space16),
             Text(
-              'No orders here',
+              AppLocalizations.of(context)!.noOrdersHere,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.foreground,
                 fontWeight: FontWeight.w600,
@@ -432,7 +435,7 @@ final class _EmptyOrders extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.space4),
             Text(
-              'New requests will appear in this list.',
+              AppLocalizations.of(context)!.newRequestsWillAppearHere,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.mutedForeground,
@@ -476,10 +479,10 @@ Color _statusColor(String status) {
   };
 }
 
-String _orderTime(Order order) {
+String _orderTime(BuildContext context, Order order) {
   final preferredDate = order.preferredDate;
   if (preferredDate == null) {
-    return 'Not scheduled';
+    return AppLocalizations.of(context)!.notScheduled;
   }
   return preferredDate.toLocal().toString().substring(0, 16);
 }

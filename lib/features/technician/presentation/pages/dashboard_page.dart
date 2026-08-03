@@ -68,7 +68,7 @@ final class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: AppSpacing.space20),
           const _EarningsBanner(),
           const SizedBox(height: AppSpacing.space20),
-          const _SectionTitle(title: 'Active Order'),
+          _SectionTitle(title: AppLocalizations.of(context)!.activeOrder),
           const SizedBox(height: AppSpacing.space8),
           _ActiveOrderSection(
             ordersFuture: _acceptedOrdersFuture,
@@ -241,7 +241,9 @@ final class _EarningsBanner extends StatelessWidget {
             Text(
               "TODAY'S EARNINGS",
               style: AppTextStyles.labelMedium.copyWith(
-                color: AppColors.surface.withValues(alpha: AppColors.primary80.a),
+                color: AppColors.surface.withValues(
+                  alpha: AppColors.primary80.a,
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.space4),
@@ -257,11 +259,26 @@ final class _EarningsBanner extends StatelessWidget {
               color: AppColors.surface.withValues(alpha: AppColors.primary20.a),
             ),
             const SizedBox(height: AppSpacing.space16),
-            const Row(
+            Row(
               children: [
-                Expanded(child: _BannerStat(value: '4', label: 'Jobs')),
-                Expanded(child: _BannerStat(value: '1', label: 'Active')),
-                Expanded(child: _BannerStat(value: '4.9', label: 'Rating')),
+                Expanded(
+                  child: _BannerStat(
+                    value: '4',
+                    label: AppLocalizations.of(context)!.jobs,
+                  ),
+                ),
+                Expanded(
+                  child: _BannerStat(
+                    value: '1',
+                    label: AppLocalizations.of(context)!.active,
+                  ),
+                ),
+                Expanded(
+                  child: _BannerStat(
+                    value: '4.9',
+                    label: AppLocalizations.of(context)!.rating,
+                  ),
+                ),
               ],
             ),
           ],
@@ -583,7 +600,7 @@ final class _QuickActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         Expanded(
           child: _QuickActionCard(
@@ -599,7 +616,7 @@ final class _QuickActionsRow extends StatelessWidget {
             icon: Icons.star,
             iconColor: AppColors.warning,
             value: '4.9',
-            label: '154 REVIEWS',
+            label: '154 ${AppLocalizations.of(context)!.reviews}',
           ),
         ),
       ],

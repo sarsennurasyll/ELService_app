@@ -187,7 +187,7 @@ final class _OrdersHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'My orders',
+              AppLocalizations.of(context)!.myOrders,
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.foreground,
               ),
@@ -203,12 +203,13 @@ final class _OrdersHeader extends StatelessWidget {
                 child: Row(
                   children: [
                     _OrdersTab(
-                      label: 'ACTIVE ($activeCount)',
+                      label:
+                          '${AppLocalizations.of(context)!.active} ($activeCount)',
                       isSelected: isActiveTab,
                       onTap: onActiveSelected,
                     ),
                     _OrdersTab(
-                      label: 'PAST',
+                      label: AppLocalizations.of(context)!.past,
                       isSelected: !isActiveTab,
                       onTap: onPastSelected,
                     ),
@@ -309,7 +310,7 @@ final class _OrderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.space4),
                     Text(
-                      '${order.assignedMasterId ?? order.technicianId ?? 'Awaiting technician'} · ${_orderTime(order)}',
+                      '${order.assignedMasterId ?? order.technicianId ?? AppLocalizations.of(context)!.awaitingTechnician} · ${_orderTime(context, order)}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.mutedForeground,
                       ),
@@ -337,7 +338,7 @@ final class _OrderCard extends StatelessWidget {
             children: [
               _OrderStatus(order: order),
               Text(
-                'Details →',
+                '${AppLocalizations.of(context)!.details} →',
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
@@ -487,10 +488,10 @@ Color _statusColor(String status) {
   };
 }
 
-String _orderTime(Order order) {
+String _orderTime(BuildContext context, Order order) {
   final preferredDate = order.preferredDate;
   if (preferredDate == null) {
-    return 'Not scheduled';
+    return AppLocalizations.of(context)!.notScheduled;
   }
   return preferredDate.toLocal().toString().substring(0, 16);
 }

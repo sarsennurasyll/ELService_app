@@ -196,7 +196,7 @@ final class _ChatHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Messages',
+              AppLocalizations.of(context)!.messages,
               style: AppTextStyles.headlineLarge.copyWith(
                 color: AppColors.foreground,
               ),
@@ -222,7 +222,7 @@ final class _ChatHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.space12),
                       Text(
-                        'Search chats',
+                        AppLocalizations.of(context)!.searchChats,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.mutedForeground,
                         ),
@@ -287,7 +287,7 @@ final class _ChatTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Order ${chat.orderId}',
+                          '${AppLocalizations.of(context)!.order} ${chat.orderId}',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.foreground,
                             fontWeight: FontWeight.w600,
@@ -299,7 +299,8 @@ final class _ChatTile extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.space4),
                   Text(
-                    chat.lastMessage ?? 'No messages yet',
+                    chat.lastMessage ??
+                        AppLocalizations.of(context)!.noMessagesYet,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.mutedForeground,
                     ),
