@@ -20,7 +20,7 @@ final class ApiClient {
            dio ??
            Dio(
              BaseOptions(
-               baseUrl: config.baseUrl,
+               baseUrl: config.releaseSafeBaseUrl,
                connectTimeout: config.connectTimeout,
                receiveTimeout: config.receiveTimeout,
                sendTimeout: config.sendTimeout,
