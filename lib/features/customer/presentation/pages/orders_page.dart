@@ -52,6 +52,13 @@ final class _OrdersPageState extends State<OrdersPage> {
     });
   }
 
+  void _selectTab(bool isActiveTab) {
+    setState(() {
+      _isActiveTab = isActiveTab;
+      _ordersFuture = _loadOrders();
+    });
+  }
+
   Future<_CustomerOrdersState> _loadOrders() async {
     final activeOrders = await widget.orderRepository.getOrders(
       scope: 'active',
@@ -77,8 +84,8 @@ final class _OrdersPageState extends State<OrdersPage> {
             _OrdersHeader(
               isActiveTab: _isActiveTab,
               activeCount: activeCount,
-              onActiveSelected: () => setState(() => _isActiveTab = true),
-              onPastSelected: () => setState(() => _isActiveTab = false),
+              onActiveSelected: () => _selectTab(true),
+              onPastSelected: () => _selectTab(false),
             ),
             Expanded(
               child: switch (snapshot.connectionState) {
