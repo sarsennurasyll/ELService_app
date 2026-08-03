@@ -61,6 +61,13 @@ final class _OrdersPageState extends State<OrdersPage> {
     });
   }
 
+  void _selectTab(_OrdersTab tab) {
+    setState(() {
+      _selectedTab = tab;
+      _ordersFuture = _loadOrders();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<_TechnicianOrdersState>(
@@ -84,7 +91,7 @@ final class _OrdersPageState extends State<OrdersPage> {
             _OrdersHeader(
               selectedTab: _selectedTab,
               incomingCount: incomingOrders.length,
-              onTabSelected: (tab) => setState(() => _selectedTab = tab),
+              onTabSelected: _selectTab,
             ),
             Expanded(
               child: switch (snapshot.connectionState) {
