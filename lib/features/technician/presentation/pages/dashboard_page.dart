@@ -6,6 +6,8 @@ import '../../../../app/theme/app_shadows.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/buttons/primary_button.dart';
 import '../../../../shared/widgets/cards/app_card.dart';
 import '../../../customer/domain/models/order.dart';
 import '../../../customer/domain/models/user.dart';
@@ -27,8 +29,8 @@ final class DashboardPage extends StatefulWidget {
 }
 
 final class _DashboardPageState extends State<DashboardPage> {
-  late final Future<Result<List<Order>>> _acceptedOrdersFuture;
-  late final Future<Result<List<Order>>> _incomingOrdersFuture;
+  late Future<Result<List<Order>>> _acceptedOrdersFuture;
+  late Future<Result<List<Order>>> _incomingOrdersFuture;
   late final Future<Result<User>> _userFuture;
 
   @override
@@ -37,6 +39,17 @@ final class _DashboardPageState extends State<DashboardPage> {
     _acceptedOrdersFuture = widget.orderRepository.getOrders(scope: 'accepted');
     _incomingOrdersFuture = widget.orderRepository.getOrders(scope: 'incoming');
     _userFuture = widget.userRepository.getCurrentUser();
+  }
+
+  void _reloadOrders() {
+    setState(() {
+      _acceptedOrdersFuture = widget.orderRepository.getOrders(
+        scope: 'accepted',
+      );
+      _incomingOrdersFuture = widget.orderRepository.getOrders(
+        scope: 'incoming',
+      );
+    });
   }
 
   @override
@@ -57,11 +70,17 @@ final class _DashboardPageState extends State<DashboardPage> {
           const SizedBox(height: AppSpacing.space20),
           const _SectionTitle(title: 'Active Order'),
           const SizedBox(height: AppSpacing.space8),
-          _ActiveOrderSection(ordersFuture: _acceptedOrdersFuture),
+          _ActiveOrderSection(
+            ordersFuture: _acceptedOrdersFuture,
+            onRetry: _reloadOrders,
+          ),
           const SizedBox(height: AppSpacing.space20),
           const _IncomingHeader(),
           const SizedBox(height: AppSpacing.space8),
-          _IncomingRequestsSection(ordersFuture: _incomingOrdersFuture),
+          _IncomingRequestsSection(
+            ordersFuture: _incomingOrdersFuture,
+            onRetry: _reloadOrders,
+          ),
           const SizedBox(height: AppSpacing.space20),
           const _QuickActionsRow(),
         ],
@@ -327,9 +346,13 @@ final class _IncomingHeader extends StatelessWidget {
 }
 
 final class _ActiveOrderSection extends StatelessWidget {
-  const _ActiveOrderSection({required this.ordersFuture});
+  const _ActiveOrderSection({
+    required this.ordersFuture,
+    required this.onRetry,
+  });
 
   final Future<Result<List<Order>>> ordersFuture;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -338,6 +361,10 @@ final class _ActiveOrderSection extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const _DashboardLoading();
+        }
+
+        if (snapshot.data is ErrorResult<List<Order>>) {
+          return _DashboardError(onRetry: onRetry);
         }
 
         final orders = switch (snapshot.data) {
@@ -461,9 +488,13 @@ final class _ActiveOrderCard extends StatelessWidget {
 }
 
 final class _IncomingRequestsSection extends StatelessWidget {
-  const _IncomingRequestsSection({required this.ordersFuture});
+  const _IncomingRequestsSection({
+    required this.ordersFuture,
+    required this.onRetry,
+  });
 
   final Future<Result<List<Order>>> ordersFuture;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -472,6 +503,10 @@ final class _IncomingRequestsSection extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const _DashboardLoading();
+        }
+
+        if (snapshot.data is ErrorResult<List<Order>>) {
+          return _DashboardError(onRetry: onRetry);
         }
 
         final orders = switch (snapshot.data) {
@@ -625,6 +660,39 @@ final class _DashboardLoading extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.space20),
         child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+final class _DashboardError extends StatelessWidget {
+  const _DashboardError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.space20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              localizations.unableToLoadOrders,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+            ),
+            const SizedBox(height: AppSpacing.space12),
+            PrimaryButton(
+              label: localizations.retry,
+              variant: PrimaryButtonVariant.outline,
+              onPressed: onRetry,
+            ),
+          ],
+        ),
       ),
     );
   }
