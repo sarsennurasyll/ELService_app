@@ -16,10 +16,7 @@ import '../../../../shared/widgets/cards/app_card.dart';
 enum _OrdersTab { incoming, accepted, completed }
 
 final class OrdersPage extends StatefulWidget {
-  const OrdersPage({
-    required this.orderRepository,
-    super.key,
-  });
+  const OrdersPage({required this.orderRepository, super.key});
 
   final OrderRepository orderRepository;
 
@@ -38,12 +35,8 @@ final class _OrdersPageState extends State<OrdersPage> {
   }
 
   Future<_TechnicianOrdersState> _loadOrders() async {
-    final incoming = await widget.orderRepository.getOrders(
-      scope: 'incoming',
-    );
-    final accepted = await widget.orderRepository.getOrders(
-      scope: 'accepted',
-    );
+    final incoming = await widget.orderRepository.getOrders(scope: 'incoming');
+    final accepted = await widget.orderRepository.getOrders(scope: 'accepted');
     final completed = await widget.orderRepository.getOrders(
       scope: 'completed',
     );
@@ -59,6 +52,14 @@ final class _OrdersPageState extends State<OrdersPage> {
     setState(() {
       _ordersFuture = _loadOrders();
     });
+  }
+
+  Future<void> _refreshOrders() {
+    final ordersFuture = _loadOrders();
+    setState(() {
+      _ordersFuture = ordersFuture;
+    });
+    return ordersFuture;
   }
 
   void _selectTab(_OrdersTab tab) {
@@ -103,9 +104,20 @@ final class _OrdersPageState extends State<OrdersPage> {
                     message: selectedResult.failure.message,
                     onRetry: _reloadOrders,
                   ),
-                _ when selectedOrders.isEmpty => const _EmptyOrders(),
+                _ when selectedOrders.isEmpty => RefreshIndicator(
+                  onRefresh: _refreshOrders,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(
+                        height: AppSpacing.space96 * 4,
+                        child: _EmptyOrders(),
+                      ),
+                    ],
+                  ),
+                ),
                 _ => RefreshIndicator(
-                  onRefresh: () async => _reloadOrders(),
+                  onRefresh: _refreshOrders,
                   child: ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.space20),
                     itemCount: selectedOrders.length,

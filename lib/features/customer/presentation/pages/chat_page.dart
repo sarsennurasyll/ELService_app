@@ -36,6 +36,14 @@ final class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  Future<void> _refreshChats() {
+    final chatsFuture = widget.repository.getChats();
+    setState(() {
+      _chatsFuture = chatsFuture;
+    });
+    return chatsFuture;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -61,16 +69,26 @@ final class _ChatPageState extends State<ChatPage> {
 
               if (result is Success<List<Chat>>) {
                 if (result.value.isEmpty) {
-                  return _ChatEmpty();
+                  return RefreshIndicator(
+                    onRefresh: _refreshChats,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        const SizedBox(height: AppSpacing.space96 * 3),
+                        _ChatEmpty(),
+                      ],
+                    ),
+                  );
                 }
 
-                return ListView.separated(
-                  itemCount: result.value.length,
-                  separatorBuilder: (context, index) => const Divider(
-                    height: 0,
-                  ),
-                  itemBuilder: (context, index) => _ChatTile(
-                    chat: result.value[index],
+                return RefreshIndicator(
+                  onRefresh: _refreshChats,
+                  child: ListView.separated(
+                    itemCount: result.value.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 0),
+                    itemBuilder: (context, index) =>
+                        _ChatTile(chat: result.value[index]),
                   ),
                 );
               }

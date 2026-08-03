@@ -30,8 +30,16 @@ final class ProfilePage extends StatefulWidget {
 }
 
 final class _ProfilePageState extends State<ProfilePage> {
-  late Future<Result<User>> _profileFuture =
-      widget.userRepository.getCurrentUser();
+  late Future<Result<User>> _profileFuture = widget.userRepository
+      .getCurrentUser();
+
+  Future<void> _refreshProfile() {
+    final profileFuture = widget.userRepository.getCurrentUser();
+    setState(() {
+      _profileFuture = profileFuture;
+    });
+    return profileFuture;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +72,7 @@ final class _ProfilePageState extends State<ProfilePage> {
             user: result.value,
             onEdit: () => _showEditProfile(result.value),
             onLogout: _logout,
+            onRefresh: _refreshProfile,
           );
         }
 
@@ -94,9 +103,9 @@ final class _ProfilePageState extends State<ProfilePage> {
     }
 
     if (result is ErrorResult<void>) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.failure.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.failure.message)));
     }
     context.go(AppRoutes.login);
   }
@@ -107,33 +116,39 @@ final class _ProfileContent extends StatelessWidget {
     required this.user,
     required this.onEdit,
     required this.onLogout,
+    required this.onRefresh,
   });
 
   final User user;
   final VoidCallback onEdit;
   final VoidCallback onLogout;
+  final RefreshCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          _ProfileHeader(user: user, onEdit: onEdit),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.space20),
-            child: Column(
-              children: [
-                for (final item in _profileMenuItems) ...[
-                  _ProfileMenuItem(item: item),
-                  if (item != _profileMenuItems.last)
-                    const SizedBox(height: AppSpacing.space8),
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            _ProfileHeader(user: user, onEdit: onEdit),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.space20),
+              child: Column(
+                children: [
+                  for (final item in _profileMenuItems) ...[
+                    _ProfileMenuItem(item: item),
+                    if (item != _profileMenuItems.last)
+                      const SizedBox(height: AppSpacing.space8),
+                  ],
+                  const SizedBox(height: AppSpacing.space8),
+                  _LogOutItem(onTap: onLogout),
                 ],
-                const SizedBox(height: AppSpacing.space8),
-                _LogOutItem(onTap: onLogout),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

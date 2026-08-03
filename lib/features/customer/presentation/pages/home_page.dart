@@ -29,57 +29,72 @@ final class HomePage extends StatefulWidget {
 }
 
 final class _HomePageState extends State<HomePage> {
-  late final Future<Result<List<Category>>> _categoriesFuture =
-      widget.categoryRepository.getCategories();
-  late final Future<Result<User>> _userFuture =
-      widget.userRepository.getCurrentUser();
+  late Future<Result<List<Category>>> _categoriesFuture = widget
+      .categoryRepository
+      .getCategories();
+  late Future<Result<User>> _userFuture = widget.userRepository
+      .getCurrentUser();
+
+  Future<void> _refreshHome() {
+    final categoriesFuture = widget.categoryRepository.getCategories();
+    final userFuture = widget.userRepository.getCurrentUser();
+    setState(() {
+      _categoriesFuture = categoriesFuture;
+      _userFuture = userFuture;
+    });
+    return Future.wait<Object>([categoriesFuture, userFuture]);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.space20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _HomeHeader(userFuture: _userFuture),
-          const SizedBox(height: AppSpacing.space20),
-          const _SearchAction(),
-          const SizedBox(height: AppSpacing.space20),
-          const _SectionHeader(title: 'Categories', actionLabel: 'See all'),
-          const SizedBox(height: AppSpacing.space12),
-          FutureBuilder<Result<List<Category>>>(
-            future: _categoriesFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const _CategoriesLoading();
-              }
-
-              final result = snapshot.data;
-              if (result is ErrorResult<List<Category>>) {
-                return _CategoriesError(message: result.failure.message);
-              }
-              if (result is Success<List<Category>>) {
-                if (result.value.isEmpty) {
-                  return const _CategoriesEmpty();
+    return RefreshIndicator(
+      onRefresh: _refreshHome,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppSpacing.space20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _HomeHeader(userFuture: _userFuture),
+            const SizedBox(height: AppSpacing.space20),
+            const _SearchAction(),
+            const SizedBox(height: AppSpacing.space20),
+            const _SectionHeader(title: 'Categories', actionLabel: 'See all'),
+            const SizedBox(height: AppSpacing.space12),
+            FutureBuilder<Result<List<Category>>>(
+              future: _categoriesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const _CategoriesLoading();
                 }
-                return _CategoriesGrid(categories: result.value);
-              }
 
-              return const _CategoriesError(
-                message: 'Не удалось загрузить категории',
-              );
-            },
-          ),
-          const SizedBox(height: AppSpacing.space20),
-          const _EmergencyBanner(),
-          const SizedBox(height: AppSpacing.space20),
-          const _SectionHeader(
-            title: 'Top Rated Near You',
-            actionLabel: 'See all',
-          ),
-          const SizedBox(height: AppSpacing.space12),
-          const _TechniciansList(),
-        ],
+                final result = snapshot.data;
+                if (result is ErrorResult<List<Category>>) {
+                  return _CategoriesError(message: result.failure.message);
+                }
+                if (result is Success<List<Category>>) {
+                  if (result.value.isEmpty) {
+                    return const _CategoriesEmpty();
+                  }
+                  return _CategoriesGrid(categories: result.value);
+                }
+
+                return const _CategoriesError(
+                  message: 'Не удалось загрузить категории',
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.space20),
+            const _EmergencyBanner(),
+            const SizedBox(height: AppSpacing.space20),
+            const _SectionHeader(
+              title: 'Top Rated Near You',
+              actionLabel: 'See all',
+            ),
+            const SizedBox(height: AppSpacing.space12),
+            const _TechniciansList(),
+          ],
+        ),
       ),
     );
   }
@@ -103,32 +118,32 @@ final class _HomeHeader extends StatelessWidget {
               _ => null,
             };
             return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.location_on_outlined,
-                  size: AppSpacing.space12,
-                  color: AppColors.primary,
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: AppSpacing.space12,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.space4),
+                    Text(
+                      user?.city?.isNotEmpty == true ? user!.city! : '—',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: AppSpacing.space4),
+                const SizedBox(height: AppSpacing.space4),
                 Text(
-                  user?.city?.isNotEmpty == true ? user!.city! : '—',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.mutedForeground,
+                  user?.fullName ?? '—',
+                  style: AppTextStyles.headlineMedium.copyWith(
+                    color: AppColors.foreground,
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: AppSpacing.space4),
-            Text(
-              user?.fullName ?? '—',
-              style: AppTextStyles.headlineMedium.copyWith(
-                color: AppColors.foreground,
-              ),
-            ),
-          ],
             );
           },
         ),
@@ -340,9 +355,7 @@ final class _CategoriesGrid extends StatelessWidget {
           Row(
             children: [
               for (var column = 0; column < 4; column++)
-                Expanded(
-                  child: _buildCategoryItem(row * 4 + column),
-                ),
+                Expanded(child: _buildCategoryItem(row * 4 + column)),
             ],
           ),
           if (row < rowCount - 1) const SizedBox(height: AppSpacing.space12),
@@ -407,9 +420,7 @@ final class _CategoriesLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return const SizedBox(
       height: AppSpacing.space64,
-      child: Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      ),
+      child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
     );
   }
 }

@@ -83,6 +83,14 @@ final class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _refreshProfile() {
+    final profileFuture = _loadProfile();
+    setState(() {
+      _profileFuture = profileFuture;
+    });
+    return profileFuture;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<_ProfileState>(
@@ -101,37 +109,41 @@ final class _ProfilePageState extends State<ProfilePage> {
             ? reviews.value
             : const <Review>[];
 
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              _ProfileHeader(
-                user: state?.user,
-                rating: ratingValue,
-                reviewsCount: reviewsCount,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.space20),
-                child: Column(
-                  children: [
-                    _ReviewsPreview(
-                      isLoading:
-                          snapshot.connectionState == ConnectionState.waiting,
-                      rating: ratingValue,
-                      reviewsCount: reviewsCount,
-                      reviews: reviewItems,
-                    ),
-                    const SizedBox(height: AppSpacing.space16),
-                    for (final item in _profileMenuItems) ...[
-                      _ProfileMenuItem(item: item),
-                      if (item != _profileMenuItems.last)
-                        const SizedBox(height: AppSpacing.space8),
-                    ],
-                    const SizedBox(height: AppSpacing.space8),
-                    _LogOutItem(onTap: _logout),
-                  ],
+        return RefreshIndicator(
+          onRefresh: _refreshProfile,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                _ProfileHeader(
+                  user: state?.user,
+                  rating: ratingValue,
+                  reviewsCount: reviewsCount,
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.space20),
+                  child: Column(
+                    children: [
+                      _ReviewsPreview(
+                        isLoading:
+                            snapshot.connectionState == ConnectionState.waiting,
+                        rating: ratingValue,
+                        reviewsCount: reviewsCount,
+                        reviews: reviewItems,
+                      ),
+                      const SizedBox(height: AppSpacing.space16),
+                      for (final item in _profileMenuItems) ...[
+                        _ProfileMenuItem(item: item),
+                        if (item != _profileMenuItems.last)
+                          const SizedBox(height: AppSpacing.space8),
+                      ],
+                      const SizedBox(height: AppSpacing.space8),
+                      _LogOutItem(onTap: _logout),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -145,9 +157,9 @@ final class _ProfilePageState extends State<ProfilePage> {
     }
 
     if (result is ErrorResult<void>) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.failure.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.failure.message)));
     }
     context.go(AppRoutes.login);
   }
@@ -248,10 +260,7 @@ final class _ProfileHeader extends StatelessWidget {
 }
 
 final class _ProfileStatistics extends StatelessWidget {
-  const _ProfileStatistics({
-    required this.rating,
-    required this.reviewsCount,
-  });
+  const _ProfileStatistics({required this.rating, required this.reviewsCount});
 
   final double rating;
   final int reviewsCount;
@@ -268,7 +277,9 @@ final class _ProfileStatistics extends StatelessWidget {
           child: _StatisticCard(label: 'REVIEWS', value: '$reviewsCount'),
         ),
         const SizedBox(width: AppSpacing.space8),
-        const Expanded(child: _StatisticCard(label: 'ACCEPT', value: '98%')),
+        const Expanded(
+          child: _StatisticCard(label: 'ACCEPT', value: '98%'),
+        ),
       ],
     );
   }
@@ -607,7 +618,10 @@ const _profileMenuItems = [
   ),
   _ProfileMenuItemData(icon: Icons.calendar_today_outlined, label: 'Schedule'),
   _ProfileMenuItemData(icon: Icons.location_on_outlined, label: 'Service area'),
-  _ProfileMenuItemData(icon: Icons.workspace_premium_outlined, label: 'Certifications'),
+  _ProfileMenuItemData(
+    icon: Icons.workspace_premium_outlined,
+    label: 'Certifications',
+  ),
   _ProfileMenuItemData(
     icon: Icons.settings_outlined,
     label: 'Settings',

@@ -59,6 +59,14 @@ final class _OrdersPageState extends State<OrdersPage> {
     });
   }
 
+  Future<void> _refreshOrders() {
+    final ordersFuture = _loadOrders();
+    setState(() {
+      _ordersFuture = ordersFuture;
+    });
+    return ordersFuture;
+  }
+
   Future<_CustomerOrdersState> _loadOrders() async {
     final activeOrders = await widget.orderRepository.getOrders(
       scope: 'active',
@@ -94,22 +102,36 @@ final class _OrdersPageState extends State<OrdersPage> {
                 ),
                 _ when selectedResult is ErrorResult<List<Order>> =>
                   _OrdersError(
-                  message: selectedResult.failure.message,
-                  onRetry: _reloadOrders,
-                ),
+                    message: selectedResult.failure.message,
+                    onRetry: _reloadOrders,
+                  ),
                 _
                     when selectedResult is Success<List<Order>> &&
                         selectedOrders.isEmpty =>
-                  _EmptyOrders(isActiveTab: _isActiveTab),
+                  RefreshIndicator(
+                    onRefresh: _refreshOrders,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: AppSpacing.space96 * 4,
+                          child: _EmptyOrders(isActiveTab: _isActiveTab),
+                        ),
+                      ],
+                    ),
+                  ),
                 _ when selectedResult is Success<List<Order>> =>
-                  ListView.separated(
-                  padding: const EdgeInsets.all(AppSpacing.space20),
-                  itemCount: selectedOrders.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: AppSpacing.space12),
-                  itemBuilder: (context, index) =>
-                      _OrderCard(order: selectedOrders[index]),
-                ),
+                  RefreshIndicator(
+                    onRefresh: _refreshOrders,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(AppSpacing.space20),
+                      itemCount: selectedOrders.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: AppSpacing.space12),
+                      itemBuilder: (context, index) =>
+                          _OrderCard(order: selectedOrders[index]),
+                    ),
+                  ),
                 _ => _OrdersError(
                   message: AppLocalizations.of(context)!.unableToLoadOrders,
                   onRetry: _reloadOrders,
